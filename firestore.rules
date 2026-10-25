@@ -2,33 +2,684 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Ödev kaydının geçerli olup olmadığını kontrol eder.
-    function valid(d) {
-      return d.keys().hasOnly(['title', 'subject', 'desc', 'author', 'due', 'photo', 'createdAt', 'uid'])
+    // Giriş yapmış ve "users" içinde profili olan kişi sınıf üyesidir.
+    function isMember() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isAdmin() {
+      return isMember() && me().role == 'admin';
+    }
+    // Görev rolleri: yönetici bir role görevler (izinler) verir, izinler kişinin profiline kopyalanır (users/{uid}.perms).
+    // Görevler: ann (duyuru), sched (ders programı), info (sınıf bilgisi), cal (takvim), req (kayıt başvuruları), topic (işlenen konular), mod (başkalarının içeriğini düzenleme/silme).
+    // Yönetici hepsine sahiptir. Kullanıcı yönetimi, çöp, kayıtlar, bakım ve roller sadece yöneticidedir.
+    function can(p) {
+      return isMember() && (me().role == 'admin' || me().get('perms', []).hasAny([p]));
+    }
+
+    // Yönetici bir kişinin ekleme iznini kapatabilir (users/{uid}.canAdd == false).
+    function canAdd() {
+      return isMember() && me().get('canAdd', true) != false;
+    }
+
+    // YYYY-AA-GG biçimi (2000-2099)
+    function validDate(s) {
+      return s is string && s.matches('^20[0-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
+    }
+    // Ekleme anında createdAt, sunucu saatinden en fazla 10 dakika sapabilir.
+    function freshTime(t) {
+      return t is number
+        && t > request.time.toMillis() - 600000
+        && t < request.time.toMillis() + 600000;
+    }
+    // Fotoğraf: boş ya da sıkıştırılmış JPEG (veri adresi). Dış bağlantı kabul edilmez.
+    function validJpeg(s) {
+      return s is string && s.size() <= 200000 && s.matches('^data:image/jpeg;base64,.*');
+    }
+
+    // Fotoğrafı, ödevin sahibi de yönetebilsin (fotoğrafı yönetici eklemiş olsa bile).
+    function hwOwner(id) {
+      return exists(/databases/$(database)/documents/homework/$(id))
+        && get(/databases/$(database)/documents/homework/$(id)).data.uid == request.auth.uid;
+    }
+
+    // Alt görevler: en fazla 8 adım, her biri en fazla 60 karakter.
+    function stepOk(l, i) {
+      return l.size() <= i || (l[i] is string && l[i].size() > 0 && l[i].size() <= 60);
+    }
+    function validSteps(l) {
+      return l is list && l.size() <= 8
+        && stepOk(l, 0) && stepOk(l, 1) && stepOk(l, 2) && stepOk(l, 3)
+        && stepOk(l, 4) && stepOk(l, 5) && stepOk(l, 6) && stepOk(l, 7);
+    }
+
+    function validHw(d) {
+      return d.keys().hasOnly(['title', 'subject', 'desc', 'author', 'due', 'photo', 'hasPhoto', 'steps', 'createdAt', 'uid'])
         && d.title is string && d.title.size() > 0 && d.title.size() <= 80
         && d.subject is string && d.subject.size() > 0 && d.subject.size() <= 20
         && d.desc is string && d.desc.size() <= 1000
         && d.author is string && d.author.size() > 0 && d.author.size() <= 40
-        && d.due is string && d.due.size() == 10
-        && d.photo is string && d.photo.size() <= 200000
+        && validDate(d.due)
+        && d.photo is string && (d.photo == '' || validJpeg(d.photo))
+        && (!('hasPhoto' in d) || d.hasPhoto is bool)
+        && (!('steps' in d) || validSteps(d.steps))
         && d.createdAt is number
         && d.uid is string;
     }
 
+    function validEx(d) {
+      return d.keys().hasOnly(['title', 'subject', 'date', 'time', 'topics', 'author', 'createdAt', 'uid'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.subject is string && d.subject.size() > 0 && d.subject.size() <= 20
+        && validDate(d.date)
+        && d.time is string && d.time.size() <= 5
+        && d.topics is string && d.topics.size() <= 500
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 40
+        && d.createdAt is number
+        && d.uid is string;
+    }
+
+    function validEv(d) {
+      return d.keys().hasOnly(['title', 'kind', 'date', 'endDate', 'time', 'note', 'author', 'createdAt', 'uid'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.kind in ['etkinlik', 'gezi', 'tatil', 'toplanti', 'diger']
+        && validDate(d.date)
+        && (!('endDate' in d) || d.endDate == '' || (validDate(d.endDate) && d.endDate >= d.date))
+        && (!('time' in d) || (d.time is string && d.time.size() <= 5))
+        && (!('note' in d) || (d.note is string && d.note.size() <= 500))
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 40
+        && d.createdAt is number
+        && d.uid is string;
+    }
+
+    function validNote(d) {
+      return d.keys().hasOnly(['title', 'subject', 'body', 'link', 'photoCount', 'likes', 'author', 'createdAt', 'uid'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.subject is string && d.subject.size() > 0 && d.subject.size() <= 20
+        && d.body is string && d.body.size() <= 3000
+        && d.link is string && d.link.size() <= 300 && (d.link == '' || d.link.matches('^https://[^ ]+$'))
+        && d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 3
+        && (!('likes' in d) || (d.likes is list && d.likes.size() <= 100))
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 40
+        && d.createdAt is number
+        && d.uid is string;
+    }
+
+    // Beğeni: başkasının notunda sadece "likes" listesine kendi kimliğini ekleyip çıkarabilirsin.
+    function likeOnly() {
+      let a = request.resource.data.get('likes', []);
+      let b = resource.data.get('likes', []);
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+        && a is list && a.size() <= 100
+        && a.toSet().difference(b.toSet()).hasOnly([request.auth.uid])
+        && b.toSet().difference(a.toSet()).hasOnly([request.auth.uid]);
+    }
+
+    // "Ben de" oyu: kişi sadece kendi oyunu ekler ya da kaldırır.
+    function voteOnly() {
+      let a = request.resource.data.get('votes', []);
+      let b = resource.data.get('votes', []);
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+        && a is list && a.size() <= 100
+        && a.toSet().difference(b.toSet()).hasOnly([request.auth.uid])
+        && b.toSet().difference(a.toSet()).hasOnly([request.auth.uid]);
+    }
+
+    // En fazla 3 sıkıştırılmış JPEG.
+    function validPhotoList(l) {
+      return l is list && l.size() <= 3
+        && (l.size() < 1 || validJpeg(l[0]))
+        && (l.size() < 2 || validJpeg(l[1]))
+        && (l.size() < 3 || validJpeg(l[2]));
+    }
+
+    // Kişisel not: sadece sahibi görür, yönetici bile göremez.
+    function validGrade(d) {
+      return d.keys().hasOnly(['subject', 'title', 'kind', 'term', 'score', 'date', 'examId', 'createdAt'])
+        && d.subject is string && d.subject.size() > 0 && d.subject.size() <= 20
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 40
+        && d.kind in ['yazili', 'sozlu', 'proje', 'quiz', 'diger']
+        && (d.term == 1 || d.term == 2)
+        && d.score is number && d.score >= 0 && d.score <= 100
+        && validDate(d.date)
+        && (!('examId' in d) || (d.examId is string && d.examId.size() <= 64))
+        && d.createdAt is number;
+    }
+
+    // Kişisel deneme sonucu: bir deneme sınavının bir dersi (doğru, yanlış, boş).
+    function validTrial(d) {
+      return d.keys().hasOnly(['grp', 'title', 'date', 'subject', 'c', 'w', 'b', 'createdAt'])
+        && d.grp is string && d.grp.size() > 0 && d.grp.size() <= 40
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 40
+        && validDate(d.date)
+        && d.subject is string && d.subject.size() > 0 && d.subject.size() <= 20
+        && d.c is int && d.c >= 0 && d.c <= 200
+        && d.w is int && d.w >= 0 && d.w <= 200
+        && d.b is int && d.b >= 0 && d.b <= 200
+        && d.createdAt is number;
+    }
+
+    function subOk(l, i) {
+      return l.size() <= i || (l[i] is string && l[i].size() <= 20);
+    }
+    function validSubs(l) {
+      return l is list && l.size() <= 12
+        && subOk(l, 0) && subOk(l, 1) && subOk(l, 2) && subOk(l, 3) && subOk(l, 4) && subOk(l, 5)
+        && subOk(l, 6) && subOk(l, 7) && subOk(l, 8) && subOk(l, 9) && subOk(l, 10) && subOk(l, 11);
+    }
+    function validNotify(n) {
+      return n is map && n.keys().hasOnly(['h17', 'h20', 'ann', 'exam', 'week', 'bday', 'vib', 'subs'])
+        && (!('h17' in n) || n.h17 is bool)
+        && (!('h20' in n) || n.h20 is bool)
+        && (!('ann' in n) || n.ann is bool)
+        && (!('exam' in n) || n.exam is bool)
+        && (!('week' in n) || n.week is bool)
+        && (!('bday' in n) || n.bday is bool)
+        && (!('vib' in n) || n.vib is bool)
+        && (!('subs' in n) || validSubs(n.subs));
+    }
+
+    function validAnn(d) {
+      return d.keys().hasOnly(['title', 'body', 'author', 'uid', 'createdAt', 'important'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.body is string && d.body.size() > 0 && d.body.size() <= 2000
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 40
+        && d.uid is string
+        && d.createdAt is number
+        && (!('important' in d) || d.important is bool);
+    }
+
+    function validQa(d) {
+      return d.keys().hasOnly(['title', 'body', 'subject', 'author', 'uid', 'createdAt', 'solved'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.body is string && d.body.size() <= 1000
+        && d.subject is string && d.subject.size() > 0 && d.subject.size() <= 20
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 40
+        && d.uid is string
+        && d.createdAt is number
+        && (!('solved' in d) || d.solved is bool);
+    }
+
+    function optOk(l, i) {
+      return l.size() <= i || (l[i] is string && l[i].size() > 0 && l[i].size() <= 40);
+    }
+    function validPoll(d) {
+      return d.keys().hasOnly(['q', 'opts', 'multi', 'names', 'closes', 'closed', 'author', 'uid', 'createdAt'])
+        && d.q is string && d.q.size() > 0 && d.q.size() <= 100
+        && d.opts is list && d.opts.size() >= 2 && d.opts.size() <= 6
+        && optOk(d.opts, 0) && optOk(d.opts, 1) && optOk(d.opts, 2) && optOk(d.opts, 3) && optOk(d.opts, 4) && optOk(d.opts, 5)
+        && d.multi is bool
+        && d.names is bool
+        && d.closes is string && (d.closes == '' || validDate(d.closes))
+        && (!('closed' in d) || d.closed is bool)
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 40
+        && d.uid is string
+        && d.createdAt is number;
+    }
+    function idxOk(l, i) {
+      return l.size() <= i || (l[i] is int && l[i] >= 0 && l[i] < 6);
+    }
+
+    // Kullanıcı profilleri: sadece yönetici oluşturur. Kişi kendi bildirim ayarını ve "duyuruları okudum" bilgisini değiştirebilir.
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create: if isAdmin()
+        || (can('req') && request.resource.data.keys().hasOnly(['name', 'email', 'role', 'createdAt', 'tokens', 'notify', 'no', 'phone'])
+            && request.resource.data.role == 'student');
+      allow delete: if isAdmin();
+      allow update: if isAdmin()
+        || (request.auth != null && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tokens', 'notify', 'annSeen', 'guide', 'mstyle'])
+            && (!('tokens' in request.resource.data) || (request.resource.data.tokens is list && request.resource.data.tokens.size() <= 30))
+            && (!('notify' in request.resource.data) || validNotify(request.resource.data.notify))
+            && (!('annSeen' in request.resource.data) || request.resource.data.annSeen is number)
+            && (!('guide' in request.resource.data) || request.resource.data.guide is bool)
+            && (!('mstyle' in request.resource.data) || request.resource.data.mstyle in ['', 'comedy', 'sport', 'sage']));
+
+      // "Yaptım" işaretleri: sadece kişinin kendisi (ve yönetici) görür.
+      match /done/{hid} {
+        allow read, delete: if isMember() && (request.auth.uid == uid || isAdmin());
+        allow create, update: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['at']);
+      }
+
+      // Alt görev ilerlemesi: sadece sahibi.
+      match /steps/{hid} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create, update: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['done'])
+          && request.resource.data.done is list && request.resource.data.done.size() <= 8;
+      }
+
+      // Yanlış defteri: yanlış yapılan sorular, sadece sahibi.
+      match /wrong/{wid} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create, update: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['subject', 'topic', 'q', 'options', 'answer', 'why', 'step', 'due', 'at'])
+          && request.resource.data.subject is string && request.resource.data.subject.size() <= 30
+          && request.resource.data.topic is string && request.resource.data.topic.size() <= 120
+          && request.resource.data.q is string && request.resource.data.q.size() <= 300
+          && request.resource.data.options is list && request.resource.data.options.size() >= 2 && request.resource.data.options.size() <= 4
+          && request.resource.data.answer is number && request.resource.data.answer >= 0 && request.resource.data.answer < 4
+          && request.resource.data.why is string && request.resource.data.why.size() <= 300
+          && request.resource.data.step is number && request.resource.data.step >= 0 && request.resource.data.step <= 3
+          && request.resource.data.due is number && request.resource.data.at is number;
+      }
+
+      // Sınav sonrası "Neden kaçırdım?" cevapları: sadece sahibi.
+      match /misses/{mid} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['subject', 'topic', 'reason', 'score', 'at'])
+          && request.resource.data.subject is string && request.resource.data.subject.size() <= 30
+          && request.resource.data.topic is string && request.resource.data.topic.size() <= 120
+          && request.resource.data.reason in ['calismadim', 'panik', 'sure', 'anlamadim', 'dikkat', 'diger']
+          && request.resource.data.score is number && request.resource.data.at is number;
+      }
+
+      // Sınav hazırlık planı ilerlemesi: sadece sahibi.
+      match /plan/{eid} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create, update: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['done'])
+          && request.resource.data.done is list && request.resource.data.done.size() <= 60;
+      }
+
+      // Sınav provası sonuçları: sadece sahibi görür ve yazar.
+      match /quiz/{qid} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['subject', 'topic', 'score', 'total', 'at'])
+          && request.resource.data.subject is string && request.resource.data.subject.size() <= 30
+          && request.resource.data.topic is string && request.resource.data.topic.size() > 0 && request.resource.data.topic.size() <= 120
+          && request.resource.data.total is int && request.resource.data.total >= 3 && request.resource.data.total <= 8
+          && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score <= request.resource.data.total
+          && freshTime(request.resource.data.at);
+        allow update: if false;
+      }
+
+      // Sınav konu listesi ilerlemesi: sadece sahibi.
+      match /prog/{eid} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create, update: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['done'])
+          && request.resource.data.done is list && request.resource.data.done.size() <= 30;
+      }
+
+      // Çalışma süresi kayıtları: sadece sahibi. Belge kimliği tarih.
+      match /study/{day} {
+        allow read, delete: if isMember() && request.auth.uid == uid;
+        allow create, update: if isMember() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['d', 'min', 'by'])
+          && validDate(request.resource.data.d)
+          && request.resource.data.min is number && request.resource.data.min >= 0 && request.resource.data.min <= 1440
+          && request.resource.data.by is map;
+      }
+    }
+
+    // Kişisel notlar: sadece sahibi okur ve yazar (yönetici dahil kimse göremez).
+    match /users/{uid}/grades/{gid} {
+      allow read, delete: if isMember() && request.auth.uid == uid;
+      allow create, update: if isMember() && request.auth.uid == uid && validGrade(request.resource.data);
+    }
+
+    // Kişisel deneme sonuçları: sadece sahibi.
+    match /users/{uid}/trials/{tid} {
+      allow read, delete: if isMember() && request.auth.uid == uid;
+      allow create, update: if isMember() && request.auth.uid == uid && validTrial(request.resource.data);
+    }
+
+    // Ödevler: üyeler görür ve ekler. Ekleyen kişi ya da yönetici düzenler ve siler.
+    // Yönetici silinen bir ödevi çöp kutusundan geri getirebilir (ikinci koşul).
     match /homework/{id} {
-      // Herkes ödevleri görebilir.
+      allow read: if isMember();
+      allow create: if (canAdd()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.author == me().name
+          && freshTime(request.resource.data.createdAt)
+          && validHw(request.resource.data))
+        || (can('mod') && validHw(request.resource.data));
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || can('mod'))
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.author == resource.data.author
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validHw(request.resource.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+
+      // Ödev altındaki yorumlar.
+      match /comments/{cid} {
+        allow read: if isMember();
+        allow create: if canAdd()
+          && request.resource.data.keys().hasOnly(['text', 'author', 'uid', 'createdAt'])
+          && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 300
+          && request.resource.data.author == me().name
+          && request.resource.data.uid == request.auth.uid
+          && freshTime(request.resource.data.createdAt);
+        allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+        allow update: if false;
+      }
+    }
+
+    // Ödev fotoğrafları ayrı tutulur: liste açılırken herkes herkesin fotoğrafını indirmesin.
+    // Belge kimliği, ilgili ödevin kimliğiyle aynıdır.
+    match /photos/{id} {
+      allow read: if isMember();
+      allow create: if (canAdd()
+          && request.resource.data.keys().hasOnly(['data', 'uid'])
+          && request.resource.data.uid == request.auth.uid
+          && validJpeg(request.resource.data.data)
+          && existsAfter(/databases/$(database)/documents/homework/$(id)))
+        || (can('mod')
+          && request.resource.data.keys().hasOnly(['data', 'uid'])
+          && validJpeg(request.resource.data.data)
+          && existsAfter(/databases/$(database)/documents/homework/$(id)));
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || hwOwner(id) || can('mod'))
+        && request.resource.data.keys().hasOnly(['data', 'uid'])
+        && request.resource.data.uid == resource.data.uid
+        && validJpeg(request.resource.data.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || hwOwner(id) || can('mod'));
+    }
+
+    // Sınavlar: ödevlerle aynı mantık.
+    match /exams/{id} {
+      allow read: if isMember();
+      allow create: if (canAdd()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.author == me().name
+          && freshTime(request.resource.data.createdAt)
+          && validEx(request.resource.data))
+        || (can('mod') && validEx(request.resource.data));
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || can('mod'))
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.author == resource.data.author
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validEx(request.resource.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+    }
+
+    // Etkinlikler (takvim): ödevlerle aynı mantık.
+    match /events/{id} {
+      allow read: if isMember();
+      allow create: if (canAdd()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.author == me().name
+          && freshTime(request.resource.data.createdAt)
+          && validEv(request.resource.data))
+        || ((can('cal') || can('mod')) && validEv(request.resource.data));
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || can('mod'))
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.author == resource.data.author
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validEv(request.resource.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+    }
+
+    // Ders notları: üyeler okur ve paylaşır. Fotoğraflar ayrı belgede tutulur (belge kimliği not kimliğiyle aynı).
+    function noteOwner(id) {
+      return exists(/databases/$(database)/documents/notes/$(id))
+        && get(/databases/$(database)/documents/notes/$(id)).data.uid == request.auth.uid;
+    }
+    match /notes/{id} {
+      allow read: if isMember();
+      allow create: if (canAdd()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.author == me().name
+          && freshTime(request.resource.data.createdAt)
+          && validNote(request.resource.data))
+        || (can('mod') && validNote(request.resource.data));
+      allow update: if isMember()
+        && (((resource.data.uid == request.auth.uid || can('mod'))
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.author == resource.data.author
+            && request.resource.data.createdAt == resource.data.createdAt
+            && validNote(request.resource.data))
+          || likeOnly());
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+    }
+    // Hocaya sorulacaklar: herkes ekler, "ben de" der. 'mod' görevlisi ya da yönetici "soruldu" işaretler.
+    match /asks/{id} {
+      allow read: if isMember();
+      allow create: if canAdd()
+        && request.resource.data.keys().hasOnly(['text', 'subject', 'author', 'uid', 'createdAt', 'votes', 'done'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.author == me().name
+        && freshTime(request.resource.data.createdAt)
+        && request.resource.data.text is string && request.resource.data.text.size() >= 3 && request.resource.data.text.size() <= 150
+        && request.resource.data.subject is string && request.resource.data.subject.size() <= 30
+        && request.resource.data.votes is list && request.resource.data.votes.size() <= 1
+        && request.resource.data.done == false;
+      allow update: if isMember()
+        && (voteOnly()
+          || ((isAdmin() || can('mod'))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done'])
+              && request.resource.data.done is bool));
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+    }
+
+    // Anonim öneri kutusu: kimin yazdığı kaydedilmez. Sadece yönetici okur ve siler.
+    match /feedback/{id} {
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['text', 'kind', 'createdAt'])
+        && request.resource.data.text is string && request.resource.data.text.size() >= 5 && request.resource.data.text.size() <= 500
+        && request.resource.data.kind in ['oneri', 'sorun', 'tesekkur']
+        && freshTime(request.resource.data.createdAt);
+      allow read, delete: if isAdmin();
+      allow update: if false;
+    }
+
+    match /notePhotos/{id} {
+      allow read: if isMember();
+      allow create: if canAdd()
+        && request.resource.data.keys().hasOnly(['data', 'uid'])
+        && request.resource.data.uid == request.auth.uid
+        && validPhotoList(request.resource.data.data)
+        && existsAfter(/databases/$(database)/documents/notes/$(id));
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || noteOwner(id) || can('mod'))
+        && request.resource.data.keys().hasOnly(['data', 'uid'])
+        && request.resource.data.uid == resource.data.uid
+        && validPhotoList(request.resource.data.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || noteOwner(id) || can('mod'));
+    }
+
+    // Soru köşesi: herkes soru sorar ve yanıtlar. Soruyu soran ya da yönetici "çözüldü" işaretler, düzenler, siler.
+    // Sınıf ortak ezber desteleri: üyeler görür, ekleyen ya da 'mod' görevlisi siler.
+    match /decks/{id} {
+      allow read: if isMember();
+      allow create: if canAdd()
+        && request.resource.data.keys().hasOnly(['title', 'subject', 'summary', 'cards', 'author', 'uid', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.author == me().name
+        && freshTime(request.resource.data.createdAt)
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+        && request.resource.data.subject is string && request.resource.data.subject.size() <= 30
+        && request.resource.data.summary is string && request.resource.data.summary.size() <= 900
+        && request.resource.data.cards is list && request.resource.data.cards.size() >= 1 && request.resource.data.cards.size() <= 12;
+      allow update: if false;
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+    }
+
+    match /qa/{id} {
+      allow read: if isMember();
+      allow create: if canAdd()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.author == me().name
+        && freshTime(request.resource.data.createdAt)
+        && validQa(request.resource.data);
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || can('mod'))
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.author == resource.data.author
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validQa(request.resource.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+
+      match /answers/{aid} {
+        allow read: if isMember();
+        allow create: if canAdd()
+          && request.resource.data.keys().hasOnly(['text', 'author', 'uid', 'createdAt'])
+          && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+          && request.resource.data.author == me().name
+          && request.resource.data.uid == request.auth.uid
+          && freshTime(request.resource.data.createdAt);
+        allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+        allow update: if false;
+      }
+    }
+
+    // Anketler: herkes anket açar ve oy verir. Her kişi kendi oy belgesini yazar (belge kimliği = kişi kimliği).
+    match /polls/{id} {
+      allow read: if isMember();
+      allow create: if canAdd()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.author == me().name
+        && freshTime(request.resource.data.createdAt)
+        && validPoll(request.resource.data);
+      allow update: if isMember()
+        && (resource.data.uid == request.auth.uid || can('mod'))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['closed'])
+        && validPoll(request.resource.data);
+      allow delete: if isMember() && (resource.data.uid == request.auth.uid || can('mod'));
+
+      match /votes/{vid} {
+        allow read: if isMember();
+        allow create, update: if isMember() && request.auth.uid == vid
+          && request.resource.data.keys().hasOnly(['c', 'name', 'at'])
+          && request.resource.data.c is list && request.resource.data.c.size() >= 1 && request.resource.data.c.size() <= 6
+          && idxOk(request.resource.data.c, 0) && idxOk(request.resource.data.c, 1) && idxOk(request.resource.data.c, 2)
+          && idxOk(request.resource.data.c, 3) && idxOk(request.resource.data.c, 4) && idxOk(request.resource.data.c, 5)
+          && (!('name' in request.resource.data) || request.resource.data.name == me().name)
+          && request.resource.data.at is number;
+        allow delete: if isMember() && (request.auth.uid == vid || can('mod'));
+      }
+    }
+
+    // Doğum günleri: herkes görür, herkes sadece kendi doğum gününü yazar (yılsız, AA-GG).
+    // Yönetici, kayıt başvurusunu kabul ederken başvuranın doğum gününü de yazar.
+    match /birthdays/{uid} {
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && request.resource.data.keys().hasOnly(['name', 'md'])
+        && request.resource.data.md is string
+        && request.resource.data.md.matches('^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
+        && ((request.auth.uid == uid && request.resource.data.name == me().name)
+            || (can('req') && request.resource.data.name is string
+                && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40));
+      allow delete: if isMember() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Kayıt başvuruları: giriş hesabını kendisi açan kişi, kendi başvurusunu yazar (şifre hiçbir yerde saklanmaz).
+    // Sadece yönetici görür, kabul eder (profil oluşturur) ya da reddeder. Yönetici "config/public" ile başvuruları kapatabilir.
+    function regOpen() {
+      return !exists(/databases/$(database)/documents/config/public)
+        || get(/databases/$(database)/documents/config/public).data.get('regOpen', true) != false;
+    }
+    function validReq(d) {
+      return d.keys().hasOnly(['name', 'email', 'bd', 'bm', 'no', 'phone', 'note', 'uid', 'status', 'createdAt'])
+        && d.uid == request.auth.uid
+        && d.status == 'pending'
+        && d.name is string && d.name.size() >= 3 && d.name.size() <= 40
+        && d.email is string && d.email.size() <= 120
+        && request.auth.token.email != null && d.email.lower() == request.auth.token.email.lower()
+        && d.bd is int && d.bd >= 1 && d.bd <= 31
+        && d.bm is int && d.bm >= 1 && d.bm <= 12
+        && d.no is string && d.no.matches('^[0-9]{1,8}$')
+        && d.phone is string && d.phone.size() <= 20
+        && d.note is string && d.note.size() <= 200
+        && freshTime(d.createdAt);
+    }
+    match /requests/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || can('req'));
+      allow create: if request.auth != null && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/users/$(uid))
+        && regOpen() && validReq(request.resource.data);
+      allow update: if (can('req')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'reason', 'decidedAt'])
+          && request.resource.data.status in ['pending', 'rejected']
+          && (!('reason' in request.resource.data) || (request.resource.data.reason is string && request.resource.data.reason.size() <= 100)))
+        || (request.auth != null && request.auth.uid == uid
+          && resource.data.status == 'rejected'
+          && !exists(/databases/$(database)/documents/users/$(uid))
+          && regOpen() && validReq(request.resource.data));
+      allow delete: if can('req') || (request.auth != null && request.auth.uid == uid);
+    }
+
+    // Başvuruların açık olup olmadığı: giriş ekranında (giriş yapmadan) okunabilir. Sadece yönetici yazar.
+    match /config/public {
       allow read: if true;
-      // Giriş yapmış (gizli kimlikli) herkes ödev ekleyebilir.
-      allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid
-                    && valid(request.resource.data);
-      // Sadece ödevi ekleyen kişi düzenleyebilir veya silebilir.
-      allow update: if request.auth != null
-                    && resource.data.uid == request.auth.uid
-                    && request.resource.data.uid == resource.data.uid
-                    && valid(request.resource.data);
-      allow delete: if request.auth != null
-                    && resource.data.uid == request.auth.uid;
+      allow write: if isAdmin() && request.resource.data.keys().hasOnly(['regOpen', 'updatedAt', 'maint', 'maintMsg'])
+        && (!('regOpen' in request.resource.data) || request.resource.data.regOpen is bool)
+        && (!('maint' in request.resource.data) || request.resource.data.maint is bool)
+        && (!('maintMsg' in request.resource.data) || (request.resource.data.maintMsg is string && request.resource.data.maintMsg.size() <= 200));
+    }
+
+    // Çöp kutusu: silinen ödev, sınav, etkinlik ve notların kopyası. Sadece yönetici görür ve geri getirir.
+    match /trash/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['kind', 'docId', 'data', 'photo', 'by', 'uid', 'at'])
+        && request.resource.data.kind in ['hw', 'ex', 'ev', 'note']
+        && request.resource.data.docId is string && request.resource.data.docId.size() <= 64
+        && request.resource.data.data is map
+        && (!('photo' in request.resource.data) || validJpeg(request.resource.data.photo))
+        && request.resource.data.by == me().name
+        && request.resource.data.uid == request.auth.uid
+        && freshTime(request.resource.data.at);
+      allow update: if false;
+    }
+
+    // Kayıt geçmişi: herkes sadece kendi adına satır ekler, sadece yönetici okur ve siler. Düzenlenemez.
+    match /logs/{id} {
+      allow read, delete: if isAdmin();
+      allow create: if isMember()
+        && request.resource.data.keys().hasOnly(['type', 'kind', 'title', 'by', 'uid', 'at'])
+        && request.resource.data.type in ['add', 'edit', 'del']
+        && request.resource.data.kind in ['hw', 'ex', 'ev', 'note', 'ann', 'qa', 'poll']
+        && request.resource.data.title is string && request.resource.data.title.size() <= 80
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.by == me().name
+        && freshTime(request.resource.data.at);
+      allow update: if false;
+    }
+
+    // Duyurular: herkes okur, "duyuru" görevi olanlar (ve yönetici) yazar ve siler.
+    match /announcements/{id} {
+      allow read: if isMember();
+      allow create: if can('ann')
+        && request.resource.data.uid == request.auth.uid
+        && freshTime(request.resource.data.createdAt)
+        && validAnn(request.resource.data);
+      allow update: if can('ann')
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.createdAt == resource.data.createdAt
+        && validAnn(request.resource.data);
+      allow delete: if can('ann');
+    }
+
+    // Ders programı, sınıf bilgisi, nöbetçi sırası ve ayarlar: üyeler okur, sadece yönetici yazar.
+    // (Hatırlatma göndericisi ve Vercel fonksiyonu yönetici anahtarıyla çalıştığı için kurallardan etkilenmez.)
+    match /config/schedule {
+      allow read: if isMember();
+      allow write: if can('sched');
+    }
+    match /config/topics {
+      allow read: if isMember();
+      allow write: if can('topic') && request.resource.data.keys().hasOnly(['topics', 'updatedAt']);
+    }
+    match /config/info {
+      allow read: if isMember();
+      allow write: if can('info');
+    }
+    match /config/{id} {
+      allow read: if isMember();
+      allow write: if isAdmin();
     }
   }
 }

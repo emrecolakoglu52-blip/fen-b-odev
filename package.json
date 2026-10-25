@@ -1,0 +1,8 @@
+{
+  "name": "9-fen-b-sinif-paneli",
+  "version": "2.0.0",
+  "private": true,
+  "description": "9 Fen B sınıf paneli. Site statik; api/ klasörü Vercel sunucu fonksiyonudur.",
+  "engines": { "node": ">=18" },
+  "dependencies": { "firebase-admin": "^12.7.0" }
+}

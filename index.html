@@ -3,867 +3,1478 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>9 Fen B Ödev Takip</title>
+<title>9 Fen B Sınıf Paneli</title>
+<meta name="theme-color" content="#0B7A6B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="9-B Ödev">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:wght@400;500;600;700&display=swap">
-<style>
-/* Layout: tek sütunlu, dar bir okuma şeridi. Üstte sınıf başlığı ve sayaçlar, altında form paneli, arama/filtre çubuğu, sekmeler ve ödev kartları.
-   Her kartın solunda takvim yaprağı gibi bir teslim tarihi bloğu bulunur. Ders rozetleri ders başına bir tonla boyanır. */
-:root {
-  --bg: #EDF2F0;
-  --surface: #FFFFFF;
-  --surface-2: #F5F9F8;
-  --ink: #10201D;
-  --ink-2: #4A5F5A;
-  --line: #D3DEDA;
-  --accent: #0B7A6B;
-  --accent-ink: #FFFFFF;
-  --accent-soft: #D9F0EB;
-  --warn-bg: #FFF1D6;
-  --warn-fg: #8A5300;
-  --crit-bg: #FFE0DC;
-  --crit-fg: #A3241A;
-  --done-bg: #E4EAE8;
-  --done-fg: #5B6C68;
-  --sub-bg-s: 70%;
-  --sub-bg-l: 90%;
-  --sub-fg-s: 65%;
-  --sub-fg-l: 28%;
-  --sub-dot-l: 45%;
-  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
-  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-:root[data-accent="mavi"] { --accent: #1F5FBF; --accent-ink: #FFFFFF; --accent-soft: #DCE8FA; }
-:root[data-accent="bordo"] { --accent: #A3213D; --accent-ink: #FFFFFF; --accent-soft: #F8DDE3; }
-:root[data-accent="turuncu"] { --accent: #B85400; --accent-ink: #FFFFFF; --accent-soft: #FDE6D2; }
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0D1613;
-    --surface: #142320;
-    --surface-2: #101C19;
-    --ink: #E6F1EE;
-    --ink-2: #9DB3AD;
-    --line: #243632;
-    --accent: #3CC9B2;
-    --accent-ink: #06211C;
-    --accent-soft: #16352F;
-    --warn-bg: #3A2C0F;
-    --warn-fg: #F2C469;
-    --crit-bg: #41191A;
-    --crit-fg: #FF9C93;
-    --done-bg: #1C2B28;
-    --done-fg: #8AA19B;
-    --sub-bg-s: 40%;
-    --sub-bg-l: 20%;
-    --sub-fg-s: 80%;
-    --sub-fg-l: 78%;
-    --sub-dot-l: 60%;
-    color-scheme: dark;
-  }
-  :root:not([data-theme="light"])[data-accent="mavi"] { --accent: #7DB0FF; --accent-ink: #08203F; --accent-soft: #1A2E4F; }
-  :root:not([data-theme="light"])[data-accent="bordo"] { --accent: #FF8FA6; --accent-ink: #3A0A15; --accent-soft: #4A1B27; }
-  :root:not([data-theme="light"])[data-accent="turuncu"] { --accent: #FFA95E; --accent-ink: #3A1B00; --accent-soft: #4A2B12; }
-}
-:root[data-theme="dark"] {
-  --bg: #0D1613;
-  --surface: #142320;
-  --surface-2: #101C19;
-  --ink: #E6F1EE;
-  --ink-2: #9DB3AD;
-  --line: #243632;
-  --accent: #3CC9B2;
-  --accent-ink: #06211C;
-  --accent-soft: #16352F;
-  --warn-bg: #3A2C0F;
-  --warn-fg: #F2C469;
-  --crit-bg: #41191A;
-  --crit-fg: #FF9C93;
-  --done-bg: #1C2B28;
-  --done-fg: #8AA19B;
-  --sub-bg-s: 40%;
-  --sub-bg-l: 20%;
-  --sub-fg-s: 80%;
-  --sub-fg-l: 78%;
-  --sub-dot-l: 60%;
-  color-scheme: dark;
-}
-:root[data-theme="dark"][data-accent="mavi"] { --accent: #7DB0FF; --accent-ink: #08203F; --accent-soft: #1A2E4F; }
-:root[data-theme="dark"][data-accent="bordo"] { --accent: #FF8FA6; --accent-ink: #3A0A15; --accent-soft: #4A1B27; }
-:root[data-theme="dark"][data-accent="turuncu"] { --accent: #FFA95E; --accent-ink: #3A1B00; --accent-soft: #4A2B12; }
-
-html { font-size: 14px; color-scheme: light; }
-[hidden] { display: none !important; }
-* { box-sizing: border-box; }
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font: 400 1.143rem/1.5 var(--font-body);
-  margin: 0;
-  padding-inline: 16px;
-  padding-block: calc(28px + env(safe-area-inset-top, 0px)) calc(56px + env(safe-area-inset-bottom, 0px));
-}
-.wrap { max-width: 740px; margin-inline: auto; display: flex; flex-direction: column; gap: 22px; }
-
-/* Üst başlık */
-.head { display: flex; flex-direction: column; gap: 14px; }
-.head-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.eyebrow {
-  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--accent);
-}
-h1 {
-  margin: 0; font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(2rem, 8vw, 3.1rem); line-height: 1.02; letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; padding: 0; list-style: none; color: var(--ink-2); font-size: 0.9rem; }
-.stats li { display: flex; align-items: baseline; gap: 6px; }
-.stats b { font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
-
-/* Düğmeler */
-button { font: inherit; cursor: pointer; }
-button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 3px solid var(--accent); outline-offset: 2px;
-}
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 46px; padding: 0 20px; border-radius: 10px; border: 1.5px solid transparent;
-  font-weight: 700; font-size: 0.98rem;
-}
-.btn-primary { background: var(--accent); color: var(--accent-ink); }
-.btn-primary:hover { filter: brightness(1.06); }
-.btn-primary[disabled] { opacity: 0.6; cursor: progress; }
-.btn-quiet { background: transparent; color: var(--ink); border-color: var(--line); }
-.btn-quiet:hover { background: var(--surface-2); }
-.btn-small { min-height: 36px; padding: 0 12px; font-size: 0.85rem; }
-
-/* Görünüm ayarları */
-.prefs {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
-  display: flex; flex-wrap: wrap; gap: 16px 28px;
-}
-.prefs[hidden] { display: none; }
-.pref { display: flex; flex-direction: column; gap: 8px; }
-.pref > span { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
-.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; }
-.seg button { background: transparent; color: var(--ink); border: 0; padding: 8px 14px; font-size: 0.88rem; font-weight: 600; min-height: 40px; }
-.seg button + button { border-left: 1.5px solid var(--line); }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-.seg button[disabled] { opacity: 0.4; cursor: default; }
-.swatches { display: flex; gap: 10px; }
-.sw { width: 40px; height: 40px; border-radius: 999px; border: 2px solid var(--line); padding: 0; }
-.sw[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offset: 2px; }
-
-/* Form paneli */
-.panel {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-  padding: 20px; display: flex; flex-direction: column; gap: 16px;
-}
-.panel[hidden] { display: none; }
-.panel h2 { margin: 0; font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; }
-.stack { display: flex; flex-direction: column; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.field label { font-size: 0.85rem; font-weight: 600; }
-.field .hint { font-weight: 400; color: var(--ink-2); }
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-input[type="text"], input[type="date"], input[type="search"], textarea, select {
-  width: 100%; font: inherit; color: var(--ink); background: var(--surface-2);
-  border: 1.5px solid var(--line); border-radius: 10px; padding: 11px 12px; min-height: 46px;
-}
-input[type="file"] { width: 100%; font: inherit; color: var(--ink-2); }
-textarea { min-height: 110px; resize: vertical; }
-input::placeholder, textarea::placeholder { color: var(--ink-2); opacity: 0.7; }
-.actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.msg { margin: 0; font-size: 0.9rem; color: var(--crit-fg); }
-.msg[hidden] { display: none; }
-.note {
-  margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--surface-2);
-  border: 1px dashed var(--line); color: var(--ink-2); font-size: 0.92rem;
-}
-.note[hidden] { display: none; }
-.prev { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.prev[hidden] { display: none; }
-.prev img { max-width: 140px; max-height: 110px; border-radius: 8px; border: 1px solid var(--line); }
-
-/* Arama ve filtre */
-.tools { display: flex; flex-direction: column; gap: 10px; }
-.tools-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.tools-row .grow { flex: 1 1 200px; min-width: 0; }
-.tools-row select { width: auto; flex: 0 1 auto; min-height: 44px; }
-.pill {
-  display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px; border-radius: 999px;
-  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font-size: 0.88rem; font-weight: 600;
-}
-.pill[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.pill[hidden] { display: none; }
-.pill .dot { width: 9px; height: 9px; border-radius: 999px; background: hsl(var(--h, 0) 65% var(--sub-dot-l)); }
-.subs { display: flex; flex-wrap: wrap; gap: 8px; }
-
-/* Sekmeler */
-.tabs { display: flex; gap: 6px; border-bottom: 1.5px solid var(--line); }
-.tab {
-  background: none; border: 0; padding: 12px 14px; color: var(--ink-2); font-weight: 600; font-size: 0.98rem;
-  border-bottom: 3px solid transparent; margin-bottom: -1.5px;
-}
-.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
-.tab .n {
-  display: inline-block; min-width: 1.6em; padding: 1px 7px; margin-left: 6px; border-radius: 999px;
-  background: var(--surface-2); border: 1px solid var(--line); font-size: 0.78rem; text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Ödev kartları */
-.list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.card {
-  --blk-bg: var(--accent-soft); --blk-fg: var(--accent);
-  display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
-}
-.card[data-state="warn"] { --blk-bg: var(--warn-bg); --blk-fg: var(--warn-fg); }
-.card[data-state="crit"] { --blk-bg: var(--crit-bg); --blk-fg: var(--crit-fg); }
-.card[data-state="done"] { --blk-bg: var(--done-bg); --blk-fg: var(--done-fg); }
-.card[data-state="done"] .title { color: var(--ink-2); }
-.date {
-  align-self: start; background: var(--blk-bg); color: var(--blk-fg); border-radius: 10px;
-  padding: 8px 0 10px; text-align: center; display: flex; flex-direction: column; align-items: center; line-height: 1;
-}
-.date .dow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-.date .day { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; margin-top: 5px; font-variant-numeric: tabular-nums; }
-.date .mon { font-size: 0.78rem; font-weight: 700; margin-top: 4px; }
-.body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
-.chip {
-  display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.76rem; font-weight: 700;
-  background: var(--blk-bg); color: var(--blk-fg); font-variant-numeric: tabular-nums;
-}
-.chip.sub {
-  background: hsl(var(--h, 0) var(--sub-bg-s) var(--sub-bg-l));
-  color: hsl(var(--h, 0) var(--sub-fg-s) var(--sub-fg-l));
-}
-.chip.sub.other { background: var(--done-bg); color: var(--done-fg); }
-.title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; line-height: 1.2; overflow-wrap: anywhere; }
-.desc { margin: 0; color: var(--ink-2); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.96rem; }
-.thumb { padding: 0; border: 0; background: none; align-self: flex-start; max-width: 100%; }
-.thumb img { display: block; max-width: 100%; max-height: 200px; border-radius: 10px; border: 1px solid var(--line); }
-.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 0.82rem; color: var(--ink-2); }
-.meta .who { font-weight: 600; color: var(--ink); }
-.lnk { background: none; border: 0; padding: 4px 0; color: var(--ink-2); font-size: 0.82rem; text-decoration: underline; }
-.lnk[data-armed="1"] { color: var(--crit-fg); font-weight: 700; }
-
-/* Boş ve yükleniyor durumları */
-.empty {
-  border: 1.5px dashed var(--line); border-radius: 14px; padding: 36px 20px; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--ink-2);
-}
-.empty strong { font-family: var(--font-display); font-size: 1.2rem; color: var(--ink); }
-
-/* Fotoğraf büyütme */
-.lb {
-  position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.82);
-  display: flex; align-items: center; justify-content: center; padding: 16px;
-}
-.lb[hidden] { display: none; }
-.lb img { max-width: 100%; max-height: 100%; border-radius: 8px; }
-.lb button { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; }
-
-@media (max-width: 520px) {
-  .row { grid-template-columns: 1fr; }
-  .card { grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 14px; }
-  .date .day { font-size: 1.6rem; }
-  .actions .btn { flex: 1 1 100%; }
-  .tools-row select { flex: 1 1 100%; width: 100%; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .card { animation: rise 0.25s ease-out both; }
-  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-}
-</style>
-
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
-  <header class="head">
-    <div class="head-top">
-      <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
-      <button class="btn btn-quiet btn-small" id="prefs-toggle" type="button" aria-expanded="false" aria-controls="prefs">Görünüm</button>
-    </div>
-    <h1>Ödev Takip</h1>
-    <ul class="stats" aria-label="Özet">
-      <li><b id="s-active">0</b> aktif ödev</li>
-      <li><b id="s-soon">0</b> 3 gün içinde bitiyor</li>
-      <li><b id="s-expired">0</b> süresi dolmuş</li>
-    </ul>
-    <div><button class="btn btn-primary" id="toggle" type="button" aria-expanded="false" aria-controls="form-panel">+ Ödev ekle</button></div>
-  </header>
 
-  <section class="prefs" id="prefs" hidden aria-label="Görünüm ayarları">
-    <div class="pref">
-      <span>Tema</span>
-      <div class="seg" id="theme-seg">
-        <button type="button" data-v="auto" aria-pressed="true">Otomatik</button>
-        <button type="button" data-v="light" aria-pressed="false">Açık</button>
-        <button type="button" data-v="dark" aria-pressed="false">Koyu</button>
-      </div>
-    </div>
-    <div class="pref">
-      <span>Yazı boyutu</span>
-      <div class="seg">
-        <button type="button" id="fs-down" aria-label="Yazıyı küçült">A−</button>
-        <button type="button" id="fs-up" aria-label="Yazıyı büyüt">A+</button>
-      </div>
-    </div>
-    <div class="pref">
-      <span>Renk</span>
-      <div class="swatches" id="swatches">
-        <button class="sw" type="button" data-v="yesil" aria-label="Yeşil" aria-pressed="true" style="background:#0B7A6B"></button>
-        <button class="sw" type="button" data-v="mavi" aria-label="Mavi" aria-pressed="false" style="background:#1F5FBF"></button>
-        <button class="sw" type="button" data-v="bordo" aria-label="Bordo" aria-pressed="false" style="background:#A3213D"></button>
-        <button class="sw" type="button" data-v="turuncu" aria-label="Turuncu" aria-pressed="false" style="background:#B85400"></button>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel" id="form-panel" hidden>
-    <h2 id="form-title">Yeni ödev</h2>
-    <form id="form" novalidate>
-      <div class="stack">
-        <div class="field">
-          <label for="f-title">Ödev adı</label>
-          <input id="f-title" type="text" maxlength="80" placeholder="Örn. Hücre zarı çalışma kâğıdı" autocomplete="off">
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="f-sub">Ders</label>
-            <select id="f-sub"></select>
-          </div>
-          <div class="field">
-            <label for="f-due">Bitiş tarihi</label>
-            <input id="f-due" type="date">
-          </div>
-        </div>
-        <div class="field">
-          <label for="f-desc">Ayrıntılı açıklama <span class="hint">(sayfa, soru numarası, teslim şekli…)</span></label>
-          <textarea id="f-desc" maxlength="1000" placeholder="Ödevde ne yapılacağını herkesin anlayacağı şekilde yaz."></textarea>
-        </div>
-        <div class="field">
-          <label for="f-author">Ödevi ekleyen</label>
-          <input id="f-author" type="text" maxlength="40" placeholder="Adın" autocomplete="name">
-        </div>
-        <div class="field">
-          <label for="f-photo">Fotoğraf <span class="hint">(isteğe bağlı, ödev kâğıdı vb.)</span></label>
-          <input id="f-photo" type="file" accept="image/*">
-          <div class="prev" id="photo-prev" hidden>
-            <img id="photo-img" alt="Seçilen fotoğraf önizlemesi">
-            <button class="btn btn-quiet btn-small" id="photo-remove" type="button">Fotoğrafı kaldır</button>
-          </div>
-        </div>
-        <p class="msg" id="form-msg" role="alert" hidden></p>
-        <div class="actions">
-          <button class="btn btn-primary" id="submit" type="submit">Ödevi kaydet</button>
-          <button class="btn btn-quiet" id="cancel" type="button">Vazgeç</button>
-        </div>
-      </div>
-    </form>
-  </section>
-  <p class="note" id="readonly-note" hidden>Bağlantı kurulamadı, şu an ödev ekleyemezsin. Sayfayı yenileyip tekrar dene.</p>
-
-  <div class="tools">
-    <div class="tools-row">
-      <input class="grow" id="q" type="search" placeholder="Ödev, açıklama veya kişi ara" aria-label="Ödev ara" autocomplete="off">
-      <select id="sort" aria-label="Sıralama">
-        <option value="date">Sıra: Bitiş tarihi</option>
-        <option value="new">Sıra: Eklenme (yeni önce)</option>
-        <option value="subject">Sıra: Ders</option>
-      </select>
-      <button class="pill" id="week" type="button" aria-pressed="false">7 gün içinde</button>
-    </div>
-    <div class="subs" id="subs" role="group" aria-label="Ders filtresi"></div>
-  </div>
-
-  <div>
-    <div class="tabs" role="tablist" aria-label="Ödev listesi">
-      <button class="tab" role="tab" id="tab-active" aria-selected="true" aria-controls="list" type="button">Aktif<span class="n" id="n-active">0</span></button>
-      <button class="tab" role="tab" id="tab-expired" aria-selected="false" aria-controls="list" type="button">Süresi dolan<span class="n" id="n-expired">0</span></button>
-    </div>
-  </div>
-  <div id="list" role="tabpanel" aria-live="polite"></div>
+<!-- Açılış -->
+<div class="center-screen" id="boot">
+  <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+  <h1>Sınıf Paneli</h1>
+  <p id="boot-msg">Yükleniyor…</p>
 </div>
 
+<!-- Giriş -->
+<div class="center-screen" id="login" hidden>
+  <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+  <h1>Sınıf Paneli</h1>
+  <p>Yöneticinin sana verdiği e-posta ve şifreyle giriş yap.</p>
+  <form class="panel" id="login-form" novalidate>
+    <div class="field">
+      <label for="l-email">E-posta</label>
+      <input id="l-email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="l-pass">Şifre</label>
+      <input id="l-pass" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false">
+    </div>
+    <label class="check"><input type="checkbox" id="l-show"> Şifreyi göster</label>
+    <p class="msg" id="l-msg" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-primary" id="l-go" type="submit">Giriş yap</button>
+      <button class="btn btn-quiet" id="l-forgot" type="button">Şifremi unuttum</button>
+    </div>
+  </form>
+  <p class="note warn" id="l-maint" role="status" hidden></p>
+  <p class="muted" id="l-regrow" hidden>Hesabın yok mu? <button class="lnk" id="l-reg" type="button">Kayıt ol</button> — başvurun yöneticiye gider, onaylanınca giriş yapabilirsin.</p>
+  <p class="muted">Şifreni unuttuysan “Şifremi unuttum”a bas ya da yöneticine yaz.</p>
+</div>
+
+<!-- Kayıt başvurusu -->
+<div class="center-screen" id="register" hidden>
+  <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+  <h1 id="r-title">Kayıt ol</h1>
+  <p id="r-lead">Bilgilerini doldur. Başvurun yöneticiye gider; kabul edilince giriş yapabilirsin.</p>
+  <form class="panel" id="reg-form" novalidate>
+    <div class="field">
+      <label for="r-name">Ad Soyad</label>
+      <input id="r-name" type="text" maxlength="40" autocomplete="name">
+    </div>
+    <div class="field" id="r-emailf">
+      <label for="r-email">E-posta</label>
+      <input id="r-email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="120">
+    </div>
+    <div id="r-passf" class="stack">
+      <div class="field">
+        <label for="r-pass">Şifre (en az 6 karakter, boşluksuz)</label>
+        <input id="r-pass" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false" maxlength="64">
+      </div>
+      <div class="field">
+        <label for="r-pass2">Şifre (tekrar)</label>
+        <input id="r-pass2" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false" maxlength="64">
+      </div>
+      <label class="check"><input type="checkbox" id="r-show"> Şifreyi göster</label>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="r-bd">Doğum günü (gün)</label>
+        <select id="r-bd"></select>
+      </div>
+      <div class="field">
+        <label for="r-bm">Ay</label>
+        <select id="r-bm"></select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="r-no">Okul numarası</label>
+        <input id="r-no" type="text" inputmode="numeric" maxlength="8" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="r-phone">Telefon (isteğe bağlı)</label>
+        <input id="r-phone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel">
+      </div>
+    </div>
+    <div class="field">
+      <label for="r-note">Yöneticiye not (isteğe bağlı)</label>
+      <textarea id="r-note" rows="2" maxlength="200"></textarea>
+    </div>
+    <p class="msg" id="r-msg" role="alert" hidden></p>
+    <div class="actions">
+      <button class="btn btn-primary" id="r-go" type="submit">Başvuruyu gönder</button>
+      <button class="btn btn-quiet" id="r-back" type="button">Vazgeç</button>
+    </div>
+  </form>
+</div>
+
+<!-- Başvuru durumu -->
+<div class="center-screen" id="pending" hidden>
+  <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+  <h1 id="p-title">Başvurun alındı</h1>
+  <p id="p-msg">Yönetici başvurunu inceleyecek. Kabul edilince bu ekran kendiliğinden açılır; sayfayı açık tutmana gerek yok, daha sonra giriş yapabilirsin.</p>
+  <section class="panel" id="p-sum"></section>
+  <div class="actions">
+    <button class="btn btn-quiet" id="p-edit" type="button" hidden>Düzelt ve tekrar başvur</button>
+    <button class="btn btn-quiet" id="p-cancel" type="button">Başvuruyu geri çek</button>
+    <button class="btn btn-quiet" id="p-out" type="button">Çıkış yap</button>
+  </div>
+</div>
+
+<!-- Bakım modu -->
+<div class="center-screen" id="maint" hidden>
+  <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+  <h1>Bakımdayız 🛠️</h1>
+  <p id="maint-msg">Uygulamayı güncelliyoruz. Birazdan tekrar dene.</p>
+  <p class="muted">Bakım bitince bu ekran kendiliğinden kapanır, sayfayı yenilemen gerekmez.</p>
+  <div><button class="btn btn-quiet" id="maint-out" type="button">Çıkış yap</button></div>
+</div>
+
+<!-- Hesap sınıfa eklenmemiş -->
+<div class="center-screen" id="noaccess" hidden>
+  <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+  <h1>Erişim yok</h1>
+  <p id="na-msg">Bu hesap sınıf paneline eklenmemiş. Yöneticine haber ver.</p>
+  <div><button class="btn btn-quiet" id="na-out" type="button">Çıkış yap</button></div>
+</div>
+
+<!-- Uygulama -->
+<div class="wrap" id="app" hidden>
+  <p class="note warn" id="maint-bar" role="status" hidden>Bakım modu açık: yönetici dışındaki herkes uygulamayı göremiyor. Bakım ekranından kapatabilirsin.</p>
+  <header class="app-head">
+    <div class="eyebrow">9. Sınıf · Fen B Şubesi</div>
+    <h1>Merhaba, <span id="who">…</span><span class="role-chip" id="role-chip" hidden>Yönetici</span></h1>
+    <button class="btn btn-quiet btn-small out-top" id="logout-top" type="button">Çıkış yap</button>
+  </header>
+  <p class="note warn" id="noadd" hidden>Yönetici senin ekleme iznini kapatmış. Ödev, sınav, etkinlik ve ders notu ekleyemezsin, ama hepsini görebilirsin.</p>
+  <p class="note warn" id="clock-note" hidden></p>
+  <p class="note warn" id="req-note" hidden><span id="req-note-t"></span> <button class="lnk" id="req-note-go" type="button">Başvurulara bak</button></p>
+
+  <!-- BUGÜN -->
+  <section class="view" id="v-today">
+    <h2 class="view-title" id="td-date">Bugün</h2>
+    <p class="note" id="td-bday" hidden></p>
+    <section class="panel tdcard" id="td-mobi" hidden>
+      <h3>Mobi'nin önerileri</h3>
+      <div class="stack" id="td-mobi-list"></div>
+    </section>
+    <details class="panel tdcard wkcard" id="td-week">
+      <summary>Bu haftanın özeti</summary>
+      <div id="td-week-body"></div>
+    </details>
+    <section class="panel tdcard" id="td-joke" hidden>
+      <h3>Günün fen şakası</h3>
+      <p class="fn-joke" id="td-joke-t"></p>
+      <div><button class="lnk" type="button" data-go="fun">Eğlence köşesine git ›</button></div>
+    </section>
+    <section class="panel tdcard" id="td-install" hidden>
+      <h3>Uygulamayı telefona ekle</h3>
+      <p class="muted" id="td-install-t"></p>
+      <div class="actions"><button class="btn btn-primary btn-small" id="td-install-go" type="button" hidden>Yükle</button><button class="btn btn-quiet btn-small" id="td-install-hide" type="button">Bir daha gösterme</button></div>
+    </section>
+    <section class="panel tdcard" id="td-lessons-box">
+      <h3 id="td-ltitle">Bugünkü dersler</h3>
+      <div id="td-lessons"></div>
+      <div><button class="lnk" type="button" data-go="sch">Tüm programı aç ›</button></div>
+    </section>
+    <section class="panel tdcard">
+      <h3>Yaklaşan ödevler</h3>
+      <div id="td-hw"></div>
+      <div><button class="lnk" type="button" data-go="hw">Tüm ödevler ›</button></div>
+    </section>
+    <section class="panel tdcard">
+      <h3>Sınav geri sayımı</h3>
+      <div id="td-ex"></div>
+    </section>
+    <section class="panel tdcard">
+      <h3>Bu hafta</h3>
+      <ul class="stats" id="td-week" aria-label="Haftalık özet"></ul>
+    </section>
+    <section class="panel tdcard" id="td-duty-box" hidden>
+      <h3>Sınıf</h3>
+      <div id="td-duty"></div>
+    </section>
+    <section class="panel tdcard" id="td-ann-box" hidden>
+      <h3>Son duyuru</h3>
+      <div id="td-ann"></div>
+    </section>
+  </section>
+
+  <!-- ÖDEVLER -->
+  <section class="view" id="v-hw" hidden>
+    <ul class="stats" aria-label="Özet">
+      <li><b id="s-active">0</b> aktif ödev</li>
+      <li><b id="s-undone">0</b> yapmadığın</li>
+      <li><b id="s-soon">0</b> 3 gün içinde bitiyor</li>
+    </ul>
+    <div><button class="btn btn-primary" id="hw-add" type="button" aria-expanded="false" aria-controls="hw-panel">+ Ödev ekle</button></div>
+
+    <section class="panel" id="hw-panel" hidden>
+      <h2 id="h-ftitle">Yeni ödev</h2>
+      <form id="hw-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="h-title">Ödev adı</label>
+            <input id="h-title" type="text" maxlength="80" placeholder="Örn. Hücre zarı çalışma kâğıdı" autocomplete="off">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="h-sub">Ders</label>
+              <select id="h-sub"></select>
+            </div>
+            <div class="field">
+              <label for="h-due">Bitiş tarihi</label>
+              <input id="h-due" type="date">
+            </div>
+          </div>
+          <div class="field">
+            <label for="h-desc">Ayrıntılı açıklama <span class="hint">(sayfa, soru numarası, teslim şekli…)</span></label>
+            <textarea id="h-desc" maxlength="1000" placeholder="Ödevde ne yapılacağını herkesin anlayacağı şekilde yaz."></textarea>
+          </div>
+          <div class="field">
+            <label for="h-steps">Alt görevler <span class="hint">(isteğe bağlı, her satır bir adım, en fazla 8)</span></label>
+            <textarea id="h-steps" rows="3" placeholder="Araştırma yap&#10;Raporu yaz&#10;Sunumu hazırla" style="min-height:76px"></textarea>
+          </div>
+          <div class="field" id="h-repbox">
+            <label for="h-rep">Tekrar</label>
+            <div class="row">
+              <select id="h-rep">
+                <option value="0">Tek seferlik</option>
+                <option value="1">Her hafta aynı gün</option>
+              </select>
+              <input id="h-rep-n" type="number" inputmode="numeric" min="2" max="8" value="4" aria-label="Kaç hafta" hidden>
+            </div>
+            <span class="hint" id="h-rep-hint" hidden>Seçtiğin hafta sayısı kadar ödev açılır, her biri 7 gün arayla. Fotoğraf sadece ilkine eklenir.</span>
+          </div>
+          <div class="field">
+            <label for="h-photo">Fotoğraf <span class="hint">(isteğe bağlı)</span></label>
+            <input id="h-photo" type="file" accept="image/*">
+            <div class="prev" id="h-prev" hidden>
+              <img id="h-img" alt="Seçilen fotoğraf önizlemesi">
+              <span class="hint" id="h-keep" hidden>Kayıtlı fotoğraf korunacak. Değiştirmek için yeni fotoğraf seç.</span>
+              <button class="btn btn-quiet btn-small" id="h-rm" type="button">Fotoğrafı kaldır</button>
+            </div>
+          </div>
+          <p class="msg" id="h-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="h-submit" type="submit">Ödevi kaydet</button>
+            <button class="btn btn-quiet" id="h-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <div class="tools">
+      <div class="tools-row">
+        <input class="grow" id="q" type="search" placeholder="Ödev, açıklama veya kişi ara" aria-label="Ödev ara" autocomplete="off">
+        <select id="sort" aria-label="Sıralama">
+          <option value="date">Sıra: Bitiş tarihi</option>
+          <option value="new">Sıra: Eklenme (yeni önce)</option>
+          <option value="subject">Sıra: Ders</option>
+        </select>
+      </div>
+      <div class="tools-row">
+        <button class="pill" id="fl-undone" type="button" aria-pressed="false">Yapmadıklarım</button>
+        <button class="pill" id="fl-week" type="button" aria-pressed="false">7 gün içinde</button>
+      </div>
+      <div class="subs" id="hw-subs" role="group" aria-label="Ders filtresi"></div>
+    </div>
+
+    <div>
+      <div class="tabs" role="tablist" aria-label="Ödev listesi">
+        <button class="tab" role="tab" id="tab-hw-active" aria-selected="true" type="button">Aktif<span class="n" id="n-hw-active">0</span></button>
+        <button class="tab" role="tab" id="tab-hw-exp" aria-selected="false" type="button">Süresi dolan<span class="n" id="n-hw-exp">0</span></button>
+      </div>
+    </div>
+    <div id="hw-list" aria-live="polite"></div>
+  </section>
+
+  <!-- SINAVLAR -->
+  <section class="view" id="v-ex" hidden>
+    <h2 class="view-title">Sınavlar</h2>
+    <p class="muted" id="ex-sum"></p>
+    <div><button class="btn btn-primary" id="ex-add" type="button" aria-expanded="false" aria-controls="ex-panel">+ Sınav ekle</button></div>
+
+    <section class="panel" id="ex-panel" hidden>
+      <h2 id="e-ftitle">Yeni sınav</h2>
+      <form id="ex-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="e-title">Sınav adı</label>
+            <input id="e-title" type="text" maxlength="80" placeholder="Örn. 1. yazılı" autocomplete="off">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="e-sub">Ders</label>
+              <select id="e-sub"></select>
+            </div>
+            <div class="field">
+              <label for="e-date">Sınav tarihi</label>
+              <input id="e-date" type="date">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="e-time">Saat <span class="hint">(isteğe bağlı)</span></label>
+              <input id="e-time" type="time">
+            </div>
+          </div>
+          <div class="field">
+            <label for="e-topics">Konular <span class="hint">(isteğe bağlı, virgül ya da satırla ayır; arkadaşların tek tek işaretleyebilir)</span></label>
+            <textarea id="e-topics" maxlength="500" placeholder="Kuvvet ve hareket, Newton yasaları, İş ve enerji"></textarea>
+          </div>
+          <p class="msg" id="e-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="e-submit" type="submit">Sınavı kaydet</button>
+            <button class="btn btn-quiet" id="e-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <div class="subs" id="ex-subs" role="group" aria-label="Ders filtresi"></div>
+    <div>
+      <div class="tabs" role="tablist" aria-label="Sınav listesi">
+        <button class="tab" role="tab" id="tab-ex-up" aria-selected="true" type="button">Yaklaşan<span class="n" id="n-ex-up">0</span></button>
+        <button class="tab" role="tab" id="tab-ex-past" aria-selected="false" type="button">Geçmiş<span class="n" id="n-ex-past">0</span></button>
+      </div>
+    </div>
+    <div id="ex-list" aria-live="polite"></div>
+  </section>
+
+  <!-- TAKVİM -->
+  <section class="view" id="v-cal" hidden>
+    <h2 class="view-title">Takvim</h2>
+    <div class="cal-head">
+      <button class="btn btn-quiet btn-small" id="cal-prev" type="button" aria-label="Önceki ay">‹</button>
+      <strong id="cal-title" aria-live="polite"></strong>
+      <button class="btn btn-quiet btn-small" id="cal-next" type="button" aria-label="Sonraki ay">›</button>
+      <button class="pill" id="cal-today" type="button">Bugün</button>
+    </div>
+    <div class="cal" id="cal-grid"></div>
+    <ul class="legend" aria-label="Renk açıklaması">
+      <li><i class="k-hw"></i>Ödev bitişi</li>
+      <li><i class="k-ex"></i>Sınav</li>
+      <li><i class="k-ev"></i>Etkinlik</li>
+      <li><i class="k-hol"></i>Resmî tatil</li>
+      <li><i class="k-bd"></i>Doğum günü</li>
+      <li><i class="k-pl"></i>Hazırlık planın</li>
+    </ul>
+    <div><button class="btn btn-primary" id="ev-add" type="button" aria-expanded="false" aria-controls="ev-panel">+ Etkinlik ekle</button></div>
+
+    <section class="panel" id="ev-panel" hidden>
+      <h2 id="ev-ftitle">Yeni etkinlik</h2>
+      <form id="ev-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="ev-title">Etkinlik adı</label>
+            <input id="ev-title" type="text" maxlength="80" placeholder="Örn. Müze gezisi" autocomplete="off">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="ev-kind">Tür</label>
+              <select id="ev-kind">
+                <option value="etkinlik">Etkinlik</option>
+                <option value="gezi">Gezi</option>
+                <option value="tatil">Tatil / ara</option>
+                <option value="toplanti">Toplantı</option>
+                <option value="diger">Diğer</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="ev-date">Tarih</label>
+              <input id="ev-date" type="date">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="ev-end">Bitiş tarihi <span class="hint">(birkaç günse)</span></label>
+              <input id="ev-end" type="date">
+            </div>
+            <div class="field">
+              <label for="ev-time">Saat <span class="hint">(isteğe bağlı)</span></label>
+              <input id="ev-time" type="time">
+            </div>
+          </div>
+          <div class="field">
+            <label for="ev-note">Not <span class="hint">(isteğe bağlı)</span></label>
+            <textarea id="ev-note" maxlength="500" placeholder="Buluşma yeri, getirilecekler…"></textarea>
+          </div>
+          <p class="msg" id="ev-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="ev-submit" type="submit">Etkinliği kaydet</button>
+            <button class="btn btn-quiet" id="ev-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section class="detail" id="cal-detail" aria-live="polite"></section>
+  </section>
+
+  <!-- DAHA FAZLA -->
+  <section class="view" id="v-more" hidden>
+    <h2 class="view-title">Daha fazla</h2>
+    <ul class="menu">
+      <li><button class="menu-item" type="button" data-go="sch">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span><b>Ders programı</b><small>Günlük ve haftalık program, şimdi hangi ders.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="tr">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19 9 12l4 3 7-9"/><path d="M4 21h16"/></svg>
+        <span><b>Deneme sınavları</b><small>Doğru, yanlış, boştan net hesabı ve gelişimin. Sadece sende görünür.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="quiz">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13l2 2 4-4"/></svg>
+        <span><b>Sınav provası</b><small>Mobi konundan test hazırlar. Zayıf konularını gösterir. Sadece sende görünür.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="study">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 3h6"/></svg>
+        <span><b>Çalışma sayacı</b><small>Odaklan, mola ver, haftalık çalışma süreni gör.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="qa">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H10l-5 4z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .7-1 1.2"/><path d="M12 14.4v.1"/></svg>
+        <span><b>Soru köşesi</b><small>Anlamadığın soruyu sor, sınıf arkadaşların yanıtlasın.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="ask">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H10l-5 4z"/><path d="M9 9h6M9 12h4"/></svg>
+        <span><b>Hocaya sorulacaklar</b><small>Bir sonraki derste sorulacak soruları topla, "ben de" de.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="fun">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1 1.5 2.2 2 3.5 2s2.5-.5 3.5-2"/><path d="M9 9.5v.1M15 9.5v.1"/></svg>
+        <span><b>Eğlence köşesi</b><small>Fen şakaları, Neden oyunu, tekerleme, ödev bahanesi (şaka).</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="poll">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+        <span><b>Anketler</b><small>Gezi yeri, tarih tercihi, kim katılıyor.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="info">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.1"/></svg>
+        <span><b>Sınıf bilgisi</b><small>Kurallar, bağlantılar, nöbetçi sırası, doğum günleri.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="grd">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+        <span><b>Notlarım</b><small>Sınav notların, ortalaman ve hedefin. Sadece sende görünür.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="nts">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg>
+        <span><b>Ders notları</b><small>Sınıfla özet, soru çözümü ve kaynak paylaş.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li><button class="menu-item" type="button" data-go="set">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+        <span><b>Ayarlar</b><small>Bildirimler, görünüm, şifre.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+      <li id="more-adm" hidden><button class="menu-item" type="button" data-go="adm">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span><b>Yönetim</b><small>Kullanıcılar, ders programı, kayıtlar, bakım.</small></span><span class="chev" aria-hidden="true">›</span></button></li>
+    </ul>
+  </section>
+
+  <!-- NOTLARIM -->
+  <section class="view" id="v-grd" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Notlarım</h2>
+    <p class="note">Bu notlar sadece sende görünür, yönetici bile göremez. Resmî karne yerine geçmez, ortalamalar tahminidir.</p>
+    <div class="seg" id="g-term" role="group" aria-label="Dönem">
+      <button type="button" data-t="1" aria-pressed="true">1. Dönem</button>
+      <button type="button" data-t="2" aria-pressed="false">2. Dönem</button>
+      <button type="button" data-t="y" aria-pressed="false">Yıl sonu</button>
+    </div>
+    <ul class="stats" aria-label="Özet">
+      <li><b id="g-avg">–</b> <span id="g-avg-l">genel ortalama</span></li>
+      <li><b id="g-n">0</b> ders</li>
+      <li><b id="g-risk">0</b> riskli ders</li>
+    </ul>
+    <div class="tools-row">
+      <button class="btn btn-primary" id="g-add" type="button" aria-expanded="false" aria-controls="g-panel">+ Not ekle</button>
+      <label class="check" style="min-height:0">Hedef puan
+        <input id="g-target" type="number" inputmode="numeric" min="50" max="100" step="1" value="70" style="width:84px;min-height:40px;padding:6px 10px" aria-label="Hedef ders puanı">
+      </label>
+      <label class="check" style="min-height:0">Kalan sınav
+        <select id="g-rem" style="width:72px;min-height:40px;padding:6px 10px" aria-label="Kalan sınav sayısı"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      </label>
+    </div>
+
+    <section class="panel" id="g-panel" hidden>
+      <h2 id="g-ftitle">Yeni not</h2>
+      <form id="g-form" novalidate>
+        <div class="stack">
+          <div class="row">
+            <div class="field">
+              <label for="g-sub">Ders</label>
+              <select id="g-sub"></select>
+            </div>
+            <div class="field">
+              <label for="g-kind">Tür</label>
+              <select id="g-kind">
+                <option value="yazili">Yazılı</option>
+                <option value="sozlu">Sözlü</option>
+                <option value="proje">Proje / performans</option>
+                <option value="quiz">Kısa sınav</option>
+                <option value="diger">Diğer</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="g-title">Başlık</label>
+            <input id="g-title" type="text" maxlength="40" placeholder="Örn. 1. yazılı" autocomplete="off">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="g-score">Puan <span class="hint">(0-100)</span></label>
+              <input id="g-score" type="number" inputmode="decimal" min="0" max="100" step="0.5">
+            </div>
+            <div class="field">
+              <label for="g-date">Tarih</label>
+              <input id="g-date" type="date">
+            </div>
+          </div>
+          <div class="field">
+            <label for="g-termsel">Dönem</label>
+            <select id="g-termsel"><option value="1">1. Dönem</option><option value="2">2. Dönem</option></select>
+          </div>
+          <p class="msg" id="g-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="g-submit" type="submit">Notu kaydet</button>
+            <button class="btn btn-quiet" id="g-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <div id="g-list" aria-live="polite"></div>
+  </section>
+
+  <!-- DERS NOTLARI -->
+  <section class="view" id="v-nts" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Ders notları</h2>
+    <p class="muted">Sınıfla paylaşmak istediğin özet, soru çözümü ya da kaynak. En fazla 3 fotoğraf ve bir bağlantı ekleyebilirsin.</p>
+    <div><button class="btn btn-primary" id="nt-add" type="button" aria-expanded="false" aria-controls="nt-panel">+ Not paylaş</button></div>
+
+    <section class="panel" id="nt-panel" hidden>
+      <h2 id="nt-ftitle">Yeni not</h2>
+      <form id="nt-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="nt-title">Başlık</label>
+            <input id="nt-title" type="text" maxlength="80" placeholder="Örn. Hücre organelleri özeti" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="nt-sub">Ders</label>
+            <select id="nt-sub"></select>
+          </div>
+          <div class="field">
+            <label for="nt-body">Not <span class="hint">(isteğe bağlı)</span></label>
+            <textarea id="nt-body" maxlength="3000" placeholder="Özet, formül, soru çözümü…"></textarea>
+          </div>
+          <div class="field">
+            <label for="nt-link">Bağlantı <span class="hint">(https ile başlamalı, isteğe bağlı)</span></label>
+            <input id="nt-link" type="url" inputmode="url" maxlength="300" placeholder="https://" autocomplete="off" autocapitalize="none" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="nt-photos">Fotoğraf <span class="hint">(en fazla 3, isteğe bağlı)</span></label>
+            <input id="nt-photos" type="file" accept="image/*" multiple>
+            <div class="prev" id="nt-prev" hidden>
+              <span id="nt-prev-imgs" class="prev-imgs"></span>
+              <span class="hint" id="nt-keep" hidden>Kayıtlı fotoğraflar korunacak. Değiştirmek için yenilerini seç.</span>
+              <button class="btn btn-quiet btn-small" id="nt-rm" type="button">Fotoğrafları kaldır</button>
+            </div>
+          </div>
+          <p class="msg" id="nt-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="nt-submit" type="submit">Paylaş</button>
+            <button class="btn btn-quiet" id="nt-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <div class="tools">
+      <input id="nt-q" type="search" placeholder="Not ara" aria-label="Ders notu ara" autocomplete="off">
+      <div class="tools-row"><button class="pill" id="nt-top" type="button" aria-pressed="false">Beğenilenler önce</button></div>
+      <div class="subs" id="nt-subs" role="group" aria-label="Ders filtresi"></div>
+    </div>
+    <section class="panel" id="nt-decks-box" hidden>
+      <h3>Ortak ezber desteleri</h3>
+      <p class="muted">Arkadaşlarının notlardan çıkarıp paylaştığı kartlar.</p>
+      <div class="stack" id="nt-decks"></div>
+    </section>
+    <div id="nt-list" aria-live="polite"></div>
+  </section>
+
+  <!-- DENEME SINAVLARI (kişisel) -->
+  <section class="view" id="v-tr" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Deneme sınavları</h2>
+    <p class="note">Bu sonuçlar sadece sende görünür. Net = doğru − yanlış ÷ 4 (4 yanlış 1 doğruyu götürür).</p>
+    <ul class="stats" aria-label="Özet">
+      <li><b id="tr-avg">–</b> ortalama net</li>
+      <li><b id="tr-last">–</b> son net</li>
+      <li><b id="tr-diff">–</b> önceki denemeye göre</li>
+    </ul>
+    <div><button class="btn btn-primary" id="tr-add" type="button" aria-expanded="false" aria-controls="tr-panel">+ Deneme ekle</button></div>
+
+    <section class="panel" id="tr-panel" hidden>
+      <h2>Yeni deneme</h2>
+      <form id="tr-form" novalidate>
+        <div class="stack">
+          <div class="row">
+            <div class="field">
+              <label for="tr-title">Deneme adı</label>
+              <input id="tr-title" type="text" maxlength="40" placeholder="Örn. Okul denemesi 3" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="tr-date">Tarih</label>
+              <input id="tr-date" type="date">
+            </div>
+          </div>
+          <p class="muted">Girdiğin dersleri doldur, boş bıraktıkların kaydedilmez. Boş soruları da yaz, toplam soru sayısı görünür.</p>
+          <div class="trrows" id="tr-rows"></div>
+          <p class="msg" id="tr-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="tr-submit" type="submit">Denemeyi kaydet</button>
+            <button class="btn btn-quiet" id="tr-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" id="tr-chartbox" hidden>
+      <div class="tools-row">
+        <h3 style="flex:1">Net gelişimin</h3>
+        <select id="tr-chartsub" aria-label="Grafik dersi"></select>
+      </div>
+      <div id="tr-chart" class="chart"></div>
+    </section>
+    <div id="tr-list" aria-live="polite"></div>
+  </section>
+
+  <!-- ÇALIŞMA SAYACI -->
+  <!-- SINAV PROVASI -->
+  <section class="view" id="v-quiz" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Sınav provası</h2>
+    <section class="panel qz-wb" id="qz-wb" hidden></section>
+    <section class="panel" id="qz-setup">
+      <p class="muted">Mobi seçtiğin konudan 5 soruluk bir test hazırlar. Sonuçlar sadece sende görünür.</p>
+      <div class="field">
+        <label for="qz-sub">Ders</label>
+        <select id="qz-sub"></select>
+      </div>
+      <div class="field">
+        <label for="qz-topic">Konu</label>
+        <input id="qz-topic" type="text" maxlength="100" autocomplete="off" placeholder="örn. Atom modelleri">
+      </div>
+      <div class="pills" id="qz-sugg" aria-label="Sınavlarından konu önerileri"></div>
+      <p class="msg" id="qz-msg" role="alert" hidden></p>
+      <div class="actions"><button class="btn btn-primary" id="qz-go" type="button">Prova hazırla</button></div>
+    </section>
+    <section class="panel" id="qz-run" hidden>
+      <div class="qz-top"><b id="qz-pos">Soru 1 / 5</b><span class="muted" id="qz-topic-l"></span></div>
+      <div class="bar"><i id="qz-bar"></i></div>
+      <h3 class="qz-q" id="qz-q"></h3>
+      <div class="qz-opts" id="qz-opts"></div>
+      <div class="qz-why" id="qz-why" hidden></div>
+      <div class="actions"><button class="btn btn-primary" id="qz-next" type="button" hidden>Sonraki</button><button class="btn btn-quiet" id="qz-quit" type="button">Provayı bırak</button></div>
+    </section>
+    <section class="panel" id="qz-res" hidden>
+      <h3 id="qz-score"></h3>
+      <p id="qz-msg2"></p>
+      <div class="stack" id="qz-wrong"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="qz-again" type="button">Aynı konuda yeni prova</button>
+        <button class="btn btn-quiet" id="qz-ask" type="button">Yanlışlarımı Mobi'ye sor</button>
+        <button class="btn btn-quiet" id="qz-new" type="button">Başka konu</button>
+      </div>
+    </section>
+    <section class="panel" id="qz-stats">
+      <h3>Gidişatın</h3>
+      <div class="qz-kpis" id="qz-kpis"></div>
+      <div id="qz-weak"></div>
+      <div class="stack" id="qz-hist"></div>
+    </section>
+  </section>
+
+  <section class="view" id="v-study" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Çalışma sayacı</h2>
+    <section class="panel timer">
+      <div class="seg" id="st-mode" role="group" aria-label="Sayaç türü">
+        <button type="button" data-m="focus" aria-pressed="true">Odak</button>
+        <button type="button" data-m="short" aria-pressed="false">Kısa mola</button>
+        <button type="button" data-m="long" aria-pressed="false">Uzun mola</button>
+      </div>
+      <div class="clock" id="st-time" role="timer" aria-live="off">25:00</div>
+      <div class="row">
+        <div class="field">
+          <label for="st-len">Süre (dakika)</label>
+          <select id="st-len"></select>
+        </div>
+        <div class="field">
+          <label for="st-sub">Ders</label>
+          <select id="st-sub"></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="st-go" type="button">Başlat</button>
+        <button class="btn btn-quiet" id="st-reset" type="button">Sıfırla</button>
+      </div>
+      <p class="muted" id="st-hint">Odak süresi bitince çalıştığın dakikalar otomatik kaydedilir. Sayaç çalışırken bu sayfayı açık tut.</p>
+    </section>
+    <ul class="stats" aria-label="Çalışma özeti">
+      <li><b id="st-today">0</b> dk bugün</li>
+      <li><b id="st-week">0</b> dk bu hafta</li>
+      <li><b id="st-streak">0</b> gün üst üste</li>
+    </ul>
+    <section class="panel">
+      <h3>Son 7 gün</h3>
+      <div id="st-chart" class="chart"></div>
+    </section>
+    <section class="panel">
+      <h3>Elle ekle</h3>
+      <p class="muted">Sayaç kullanmadan çalıştıysan süreyi buradan ekle.</p>
+      <div class="row">
+        <div class="field">
+          <label for="st-man">Dakika</label>
+          <input id="st-man" type="number" inputmode="numeric" min="1" max="600" placeholder="30">
+        </div>
+        <div class="field">
+          <label for="st-mansub">Ders</label>
+          <select id="st-mansub"></select>
+        </div>
+      </div>
+      <p class="msg" id="st-msg" role="alert" hidden></p>
+      <div class="actions"><button class="btn btn-quiet" id="st-add" type="button">Süreyi ekle</button></div>
+    </section>
+  </section>
+
+  <!-- SORU KÖŞESİ -->
+  <section class="view" id="v-qa" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Soru köşesi</h2>
+    <p class="muted">Anlamadığın soruyu yaz, sınıf arkadaşların yanıtlasın. Çözülünce “Çözüldü” işaretle.</p>
+    <div><button class="btn btn-primary" id="qa-add" type="button" aria-expanded="false" aria-controls="qa-panel">+ Soru sor</button></div>
+    <section class="panel" id="qa-panel" hidden>
+      <h2>Yeni soru</h2>
+      <form id="qa-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="qa-title">Soru başlığı</label>
+            <input id="qa-title" type="text" maxlength="80" placeholder="Örn. Bileşke kuvveti nasıl bulunur?" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="qa-sub">Ders</label>
+            <select id="qa-sub"></select>
+          </div>
+          <div class="field">
+            <label for="qa-body">Ayrıntı <span class="hint">(isteğe bağlı)</span></label>
+            <textarea id="qa-body" maxlength="1000" placeholder="Hangi sayfa, hangi soru, nerede takıldın?"></textarea>
+          </div>
+          <p class="msg" id="qa-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="qa-submit" type="submit">Soruyu gönder</button>
+            <button class="btn btn-quiet" id="qa-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+    <div class="tools">
+      <div class="tools-row"><button class="pill" id="qa-open" type="button" aria-pressed="false">Çözülmemişler</button></div>
+      <div class="subs" id="qa-subs" role="group" aria-label="Ders filtresi"></div>
+    </div>
+    <div id="qa-list" aria-live="polite"></div>
+  </section>
+
+  <!-- ANKETLER -->
+  <section class="view" id="v-ask" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Hocaya sorulacaklar</h2>
+    <p class="muted">Bir sonraki derste hocaya sorulacak soruları yaz. Sen de sormak istediğin bir soru görürsen "Ben de" de, en çok istenenler üstte çıkar.</p>
+    <section class="panel">
+      <form id="ask-form" novalidate>
+        <div class="row">
+          <div class="field"><label for="ask-sub">Ders</label><select id="ask-sub"></select></div>
+        </div>
+        <div class="field"><label for="ask-t">Sorun</label><input id="ask-t" type="text" maxlength="150" autocomplete="off" placeholder="örn. Bileşke kuvvet sınavda çıkar mı?"></div>
+        <p class="msg" id="ask-msg" role="alert" hidden></p>
+        <div class="actions"><button class="btn btn-primary" id="ask-go" type="submit">Listeye ekle</button><button class="btn btn-quiet" id="ask-copy" type="button">Listeyi kopyala</button></div>
+      </form>
+    </section>
+    <div class="stack" id="ask-list" aria-live="polite"></div>
+  </section>
+
+  <section class="view" id="v-fun" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Eğlence köşesi</h2>
+    <p class="muted">Ders arası keyfi. Hepsi şaka, ama bir kısmı ders de çalıştırır.</p>
+
+    <section class="panel">
+      <h3>Günün fen şakası</h3>
+      <p class="fn-joke" id="fn-joke"></p>
+      <div class="actions"><button class="btn btn-quiet btn-small" id="fn-joke-next" type="button">Başka şaka</button></div>
+    </section>
+
+    <section class="panel">
+      <h3>Neden oyunu</h3>
+      <p class="muted">Saçma bir fen sorusu sor. Mobi hem güldürsün hem doğrusunu söylesin.</p>
+      <div class="pills" id="fn-why-sugg"></div>
+      <div class="field">
+        <label for="fn-why-q">Saçma sorun</label>
+        <input id="fn-why-q" type="text" maxlength="150" autocomplete="off" placeholder="örn. Gökyüzü kırmızı olsaydı ne olurdu?">
+      </div>
+      <p class="msg" id="fn-why-msg" role="alert" hidden></p>
+      <div class="ai-msg bot" id="fn-why-out" hidden></div>
+      <div class="actions"><button class="btn btn-primary" id="fn-why-go" type="button">Mobi'ye sor</button></div>
+    </section>
+
+    <section class="panel">
+      <h3>Tekerleme atölyesi</h3>
+      <p class="muted">Bir konuyu komik bir tekerleme, rap ya da maniye çevir. Ezberlemesi kolaylaşır. Notların altında da bu düğme var.</p>
+      <div class="row">
+        <div class="field"><label for="fn-rh-sub">Ders</label><select id="fn-rh-sub"></select></div>
+        <div class="field"><label for="fn-rh-form">Tür</label><select id="fn-rh-form"><option value="tekerleme">Tekerleme</option><option value="rap">Rap</option><option value="mani">Mani</option></select></div>
+      </div>
+      <div class="field"><label for="fn-rh-t">Konu</label><input id="fn-rh-t" type="text" maxlength="100" autocomplete="off" placeholder="örn. Atomun yapısı"></div>
+      <p class="msg" id="fn-rh-msg" role="alert" hidden></p>
+      <div class="actions"><button class="btn btn-primary" id="fn-rh-go" type="button">Yaz bakalım</button></div>
+    </section>
+
+    <section class="panel">
+      <h3>Ödev bahanesi jeneratörü <span class="chip plain">ŞAKA</span></h3>
+      <p class="muted">Tamamen şaka. Öğretmene gerçekten söyleme, kimse inanmaz 😄</p>
+      <p class="fn-joke" id="fn-ex-out" aria-live="polite">Düğmeye bas, bahane gelsin.</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="fn-ex-go" type="button">Bahane üret</button>
+        <button class="btn btn-quiet" id="fn-ex-hw" type="button">Neyse, ödevlerime bakayım</button>
+      </div>
+    </section>
+  </section>
+
+  <section class="view" id="v-poll" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Anketler</h2>
+    <p class="muted">Sınıfla birlikte karar ver: gezi yeri, tarih, kim katılıyor.</p>
+    <div><button class="btn btn-primary" id="poll-add" type="button" aria-expanded="false" aria-controls="poll-panel">+ Anket aç</button></div>
+    <section class="panel" id="poll-panel" hidden>
+      <h2>Yeni anket</h2>
+      <form id="poll-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="p-q">Soru</label>
+            <input id="p-q" type="text" maxlength="100" placeholder="Örn. Gezi için hangi gün uygun?" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="p-opts">Seçenekler <span class="hint">(her satır bir seçenek, 2 ile 6 arası)</span></label>
+            <textarea id="p-opts" rows="4" placeholder="Salı&#10;Çarşamba&#10;Perşembe" style="min-height:96px"></textarea>
+          </div>
+          <label class="check"><input type="checkbox" id="p-multi"> Birden fazla seçenek işaretlenebilsin</label>
+          <label class="check"><input type="checkbox" id="p-names"> Kimin ne oy verdiği görünsün (kim katılıyor listesi)</label>
+          <div class="field">
+            <label for="p-closes">Son oy tarihi <span class="hint">(isteğe bağlı)</span></label>
+            <input id="p-closes" type="date">
+          </div>
+          <p class="msg" id="p-msg" role="alert" hidden></p>
+          <div class="actions">
+            <button class="btn btn-primary" id="p-submit" type="submit">Anketi aç</button>
+            <button class="btn btn-quiet" id="p-cancel" type="button">Vazgeç</button>
+          </div>
+        </div>
+      </form>
+    </section>
+    <div id="poll-list" aria-live="polite"></div>
+  </section>
+
+  <!-- SINIF BİLGİSİ -->
+  <section class="view" id="v-info" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Sınıf bilgisi</h2>
+    <section class="panel"><h3>Nöbetçi sırası</h3><div id="in-duty"></div></section>
+    <section class="panel"><h3>Sınıf kuralları</h3><div id="in-rules"></div></section>
+    <section class="panel"><h3>Bağlantılar</h3><div id="in-links"></div></section>
+    <section class="panel"><h3>Doğum günleri</h3><div id="in-bd"></div></section>
+    <section class="panel"><h3>Bu hafta işlenen konular</h3><div id="in-topics"></div></section>
+    <section class="panel" id="tp-admin" hidden>
+      <h3>İşlenen konuyu güncelle</h3>
+      <p class="muted">Derste işlediğiniz konuyu yaz. Mobi, sınıfa o konuyu çalışmayı ve o konudan soru çözmeyi önerir.</p>
+      <form id="tp-form" novalidate>
+        <div class="stack">
+          <div class="row">
+            <div class="field"><label for="tp-sub">Ders</label><select id="tp-sub"></select></div>
+            <div class="field"><label for="tp-t">Konu</label><input id="tp-t" type="text" maxlength="80" autocomplete="off" placeholder="örn. Newton'un hareket yasaları"></div>
+          </div>
+          <p class="msg" id="tp-msg" role="alert" hidden></p>
+          <div class="actions"><button class="btn btn-primary" id="tp-go" type="submit">Kaydet</button></div>
+        </div>
+      </form>
+    </section>
+    <section class="panel" id="in-admin" hidden>
+      <h3>Düzenle (yönetici)</h3>
+      <form id="in-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="in-rules-t">Sınıf kuralları</label>
+            <textarea id="in-rules-t" maxlength="2000" placeholder="Her satıra bir kural yaz."></textarea>
+          </div>
+          <div class="field">
+            <label for="in-links-t">Bağlantılar <span class="hint">(her satır: Başlık | https://adres)</span></label>
+            <textarea id="in-links-t" maxlength="1500" placeholder="WhatsApp grubu | https://chat.whatsapp.com/…"></textarea>
+          </div>
+          <div class="field">
+            <label for="in-duty-t">Nöbetçi sırası <span class="hint">(her satır bir kişi, her hafta sıradaki kişi nöbetçi olur)</span></label>
+            <textarea id="in-duty-t" maxlength="1500"></textarea>
+          </div>
+          <div class="field">
+            <label for="in-duty-d">İlk nöbetçinin haftasının pazartesisi</label>
+            <input id="in-duty-d" type="date">
+          </div>
+          <p class="msg" id="in-msg" role="alert" hidden></p>
+          <div class="actions"><button class="btn btn-primary" id="in-save" type="submit">Kaydet</button></div>
+        </div>
+      </form>
+    </section>
+  </section>
+
+  <!-- DERS PROGRAMI -->
+  <section class="view" id="v-sch" hidden>
+    <h2 class="view-title">Ders programı</h2>
+    <div class="tools-row">
+      <div class="seg" id="sch-mode" role="group" aria-label="Görünüm">
+        <button type="button" data-m="day" aria-pressed="true">Günlük</button>
+        <button type="button" data-m="week" aria-pressed="false">Haftalık</button>
+      </div>
+    </div>
+    <div class="subs" id="sch-days" role="group" aria-label="Gün seç"></div>
+    <div id="sch-body"></div>
+    <div id="sch-detail" hidden></div>
+  </section>
+
+  <!-- DUYURULAR -->
+  <section class="view" id="v-ann" hidden>
+    <h2 class="view-title">Duyurular</h2>
+    <section class="panel" id="ann-admin" hidden>
+      <h3>Yeni duyuru</h3>
+      <form id="a-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="a-title">Başlık</label>
+            <input id="a-title" type="text" maxlength="80" placeholder="Örn. Cuma günü gezi var" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="a-body">Duyuru metni</label>
+            <textarea id="a-body" maxlength="2000" placeholder="Herkesin göreceği duyuruyu yaz."></textarea>
+          </div>
+          <label class="check"><input type="checkbox" id="a-imp"> Önemli olarak işaretle</label>
+          <label class="check"><input type="checkbox" id="a-push" checked> Herkesin telefonuna bildirim gönder</label>
+          <p class="msg" id="a-msg" role="alert" hidden></p>
+          <div class="actions"><button class="btn btn-primary" id="a-go" type="submit">Duyuruyu yayınla</button></div>
+        </div>
+      </form>
+    </section>
+    <div id="ann-list" aria-live="polite"></div>
+  </section>
+
+  <!-- AYARLAR -->
+  <section class="view" id="v-set" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Ayarlar</h2>
+
+    <section class="panel">
+      <h3>Uygulama turu</h3>
+      <p class="muted">Panelin özelliklerini tanıtan karşılama turunu yeniden izle.</p>
+      <button class="btn btn-quiet" id="wl-again" type="button">Turu yeniden başlat</button>
+    </section>
+
+    <section class="panel">
+      <h3>Hesabım</h3>
+      <dl class="kv">
+        <dt>Ad</dt><dd id="set-name">-</dd>
+        <dt>E-posta</dt><dd id="set-email">-</dd>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <h3>Hatırlatma bildirimleri</h3>
+      <p class="muted">Bitişine <span id="rem-days">3</span> gün ya da daha az kalan ve yapmadığın ödev varsa seçtiğin saatlerde telefonuna bildirim gelir.</p>
+      <p class="note warn" id="push-hint" hidden></p>
+      <p class="muted" id="push-status"></p>
+      <div class="actions"><button class="btn btn-primary" id="push-btn" type="button">Bu cihazda bildirimleri aç</button></div>
+      <label class="check"><input type="checkbox" id="n17"> Akşam 17:00 hatırlatması</label>
+      <label class="check"><input type="checkbox" id="n20"> Akşam 20:00 hatırlatması</label>
+      <label class="check"><input type="checkbox" id="n-ann"> Yeni duyuru bildirimleri</label>
+      <label class="check"><input type="checkbox" id="n-exam"> Yaklaşan sınav hatırlatması</label>
+      <label class="check"><input type="checkbox" id="n-week"> Pazar akşamı haftalık özet (19:00)</label>
+      <label class="check"><input type="checkbox" id="n-bday"> Doğum günü bildirimleri</label>
+      <label class="check"><input type="checkbox" id="n-vib"> Bildirimde titreşim (Android)</label>
+      <label class="check"><input type="checkbox" id="n-sound"> Uygulama açıkken bildirim sesi (bu cihaz)</label>
+      <details class="fold">
+        <summary>Sadece seçtiğim derslerin ödev bildirimi</summary>
+        <p class="muted">Hiçbirini seçmezsen tüm derslerin ödevleri hatırlatılır.</p>
+        <div class="subs" id="n-subs" role="group" aria-label="Bildirim dersleri"></div>
+      </details>
+      <p class="msg" id="push-msg" role="alert" hidden></p>
+    </section>
+
+    <section class="panel">
+      <h3>Cahil AI (rehberli mod)</h3>
+      <p class="muted">Uygulamayı ya da konuları hiç bilmiyorsan aç. Cahil AI her ekranda adım adım yol gösterir. Konu, soru ve prova işlerini Mobi AI'ya verir, bitince devam eder. İstediğin zaman kapatabilirsin.</p>
+      <label class="check"><input type="checkbox" id="set-guide"> Cahil AI'yı aç</label>
+      <p class="msg" id="guide-msg" role="status" hidden></p>
+    </section>
+
+    <section class="panel">
+      <h3>Telefona ekle</h3>
+      <p class="muted">Uygulamayı ana ekrana eklersen daha hızlı açılır ve bildirimler çalışır (iPhone'da bildirim için şart).</p>
+      <p class="fn-joke" id="set-install-t"></p>
+      <div class="actions"><button class="btn btn-quiet btn-small" id="set-install-go" type="button" hidden>Yükle</button></div>
+    </section>
+
+    <section class="panel">
+      <h3>Öneri kutusu</h3>
+      <p class="muted">Uygulama ya da sınıf için öneri, sorun ya da teşekkür yaz. Adın kaydedilmez, yalnızca yönetici okur.</p>
+      <div class="field"><label for="fb-kind">Tür</label><select id="fb-kind"><option value="oneri">Öneri</option><option value="sorun">Sorun bildirimi</option><option value="tesekkur">Teşekkür</option></select></div>
+      <div class="field"><label for="fb-t">Mesajın</label><textarea id="fb-t" maxlength="500" placeholder="Aklındakini yaz…"></textarea></div>
+      <p class="msg" id="fb-msg" role="alert" hidden></p>
+      <div class="actions"><button class="btn btn-primary btn-small" id="fb-go" type="button">İsimsiz gönder</button></div>
+    </section>
+
+    <section class="panel">
+      <h3>Eğlence</h3>
+      <div class="field">
+        <label for="set-mstyle">Mobi'nin konuşma tarzı</label>
+        <select id="set-mstyle">
+          <option value="">Normal</option>
+          <option value="comedy">Komedyen (şakalı anlatır)</option>
+          <option value="sport">Maç spikeri (heyecanlı anlatır)</option>
+          <option value="sage">Bilge dede (sakin, atasözlü)</option>
+        </select>
+      </div>
+      <p class="muted">Tarz sadece anlatımı değiştirir, bilgi aynı kalır.</p>
+      <label class="check"><input type="checkbox" id="set-confetti"> Konfeti ve kutlama mesajları</label>
+      <label class="check"><input type="checkbox" id="set-joke"> Bugün ekranında günün şakasını göster</label>
+      <p class="msg" id="fun-msg" role="status" hidden></p>
+    </section>
+
+    <section class="panel">
+      <h3>Doğum günüm</h3>
+      <p class="muted">Sınıf takviminde görünür ve o gün arkadaşlarına bildirim gider. Yıl yazılmaz.</p>
+      <div class="row">
+        <div class="field">
+          <label for="bd-d">Gün</label>
+          <select id="bd-d"></select>
+        </div>
+        <div class="field">
+          <label for="bd-m">Ay</label>
+          <select id="bd-m"></select>
+        </div>
+      </div>
+      <p class="msg" id="bd-msg" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn btn-quiet" id="bd-save" type="button">Kaydet</button>
+        <button class="btn btn-quiet" id="bd-clear" type="button">Kaldır</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Görünüm</h3>
+      <div class="stack">
+        <div class="field">
+          <label>Tema</label>
+          <div class="seg" id="theme-seg">
+            <button type="button" data-v="auto" aria-pressed="true">Otomatik</button>
+            <button type="button" data-v="light" aria-pressed="false">Açık</button>
+            <button type="button" data-v="dark" aria-pressed="false">Koyu</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Yazı boyutu</label>
+          <div class="seg">
+            <button type="button" id="fs-down" aria-label="Yazıyı küçült">A−</button>
+            <button type="button" id="fs-up" aria-label="Yazıyı büyüt">A+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Renk</label>
+          <div class="swatches" id="swatches">
+            <button class="sw" type="button" data-v="yesil" aria-label="Yeşil" aria-pressed="true" style="background:#0B7A6B"></button>
+            <button class="sw" type="button" data-v="mavi" aria-label="Mavi" aria-pressed="false" style="background:#1F5FBF"></button>
+            <button class="sw" type="button" data-v="bordo" aria-label="Bordo" aria-pressed="false" style="background:#A3213D"></button>
+            <button class="sw" type="button" data-v="turuncu" aria-label="Turuncu" aria-pressed="false" style="background:#B85400"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Ders renkleri</h3>
+      <details class="fold">
+        <summary>Her dersin rengini sen seç (sadece bu cihazda)</summary>
+        <div class="hues" id="hues"></div>
+        <div class="actions"><button class="btn btn-quiet btn-small" id="hues-reset" type="button">Varsayılan renkler</button></div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h3>Verilerim</h3>
+      <p class="muted">Notlarını, deneme sonuçlarını ve çalışma sürelerini dosya olarak indir.</p>
+      <div class="actions">
+        <button class="btn btn-quiet" id="me-csv" type="button">Excel için indir (CSV)</button>
+        <button class="btn btn-quiet" id="me-json" type="button">Yedek olarak indir (JSON)</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Şifre değiştir</h3>
+      <form id="pw-form" novalidate>
+        <div class="stack">
+          <div class="field">
+            <label for="pw-old">Şimdiki şifre</label>
+            <input id="pw-old" type="password" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label for="pw-new">Yeni şifre <span class="hint">(en az 6 karakter)</span></label>
+            <input id="pw-new" type="password" autocomplete="new-password">
+          </div>
+          <p class="msg" id="pw-msg" role="alert" hidden></p>
+          <div class="actions"><button class="btn btn-quiet" type="submit">Şifreyi değiştir</button></div>
+        </div>
+      </form>
+    </section>
+
+    <div><button class="btn btn-quiet" id="logout" type="button">Çıkış yap</button></div>
+  </section>
+
+  <!-- YÖNETİM -->
+  <section class="view" id="v-adm" hidden>
+    <button class="back" type="button" data-go="more">‹ Daha fazla</button>
+    <h2 class="view-title">Yönetim</h2>
+    <div class="tabs" role="tablist" aria-label="Yönetim bölümleri" id="adm-tabs">
+      <button class="tab" role="tab" data-adm="users" aria-selected="true" type="button">Kullanıcılar</button>
+      <button class="tab" role="tab" data-adm="req" aria-selected="false" type="button">Başvurular<span class="n" id="n-req">0</span></button>
+      <button class="tab" role="tab" data-adm="roles" aria-selected="false" type="button">Roller</button>
+      <button class="tab" role="tab" data-adm="sched" aria-selected="false" type="button">Ders programı</button>
+      <button class="tab" role="tab" data-adm="calimp" aria-selected="false" type="button">Takvim yükle</button>
+      <button class="tab" role="tab" data-adm="logs" aria-selected="false" type="button">Kayıtlar</button>
+      <button class="tab" role="tab" data-adm="fb" aria-selected="false" type="button">Öneriler<span class="n" id="n-fb">0</span></button>
+      <button class="tab" role="tab" data-adm="trash" aria-selected="false" type="button">Çöp<span class="n" id="n-trash">0</span></button>
+      <button class="tab" role="tab" data-adm="maint" aria-selected="false" type="button">Bakım</button>
+    </div>
+
+    <div class="view" id="adm-users">
+      <p class="note" id="last-rem">Henüz hatırlatma gönderilmedi.</p>
+
+      <section class="panel">
+        <h3>Yeni kullanıcı oluştur</h3>
+        <form id="u-form" novalidate>
+          <div class="stack">
+            <div class="field">
+              <label for="u-name">Ad Soyad</label>
+              <input id="u-name" type="text" maxlength="40" autocomplete="off">
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="u-email">E-posta</label>
+                <input id="u-email" type="email" autocomplete="off" autocapitalize="none" spellcheck="false">
+              </div>
+              <div class="field">
+                <label for="u-pass">Şifre <span class="hint">(en az 6, boşluksuz)</span></label>
+                <input id="u-pass" type="text" autocomplete="off" autocapitalize="none" spellcheck="false">
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="u-role">Rol</label>
+                <select id="u-role">
+                  <option value="student">Öğrenci</option>
+                  <option value="admin">Yönetici</option>
+                </select>
+              </div>
+              <div class="field" id="u-roleid-f">
+                <label for="u-roleid">Görev rolü <span class="hint">(isteğe bağlı)</span></label>
+                <select id="u-roleid"></select>
+              </div>
+            </div>
+            <p class="msg" id="u-msg" role="alert" hidden></p>
+            <div class="actions"><button class="btn btn-primary" id="u-go" type="submit">Kullanıcıyı oluştur</button></div>
+          </div>
+        </form>
+        <div class="cred" id="u-cred" hidden>
+          <strong>Kullanıcı oluşturuldu. Bu bilgileri kişiye ver:</strong>
+          <div id="u-cred-body"></div>
+          <div><button class="btn btn-quiet btn-small" id="u-copy" type="button">Bilgileri kopyala</button></div>
+        </div>
+      </section>
+
+      <h3 class="view-title" style="font-size:1.2rem">Kullanıcılar <span class="muted" id="u-count"></span></h3>
+      <p class="note" id="acct-note" hidden></p>
+      <div class="actions"><button class="btn btn-quiet btn-small" id="acct-refresh" type="button">Giriş hesaplarını kontrol et</button></div>
+      <div class="list" id="u-list"></div>
+      <section class="panel" id="u-orph" hidden>
+        <h3>Sınıfa eklenmemiş giriş hesapları</h3>
+        <p class="muted">Bu hesaplarla giriş yapan kişi "Erişim yok" ekranını görür. Eklersen sınıfa girebilir.</p>
+        <div class="list" id="u-orph-list"></div>
+      </section>
+    </div>
+
+    <div class="view" id="adm-roles" hidden>
+      <section class="panel">
+        <h3 id="rl-title">Yeni rol</h3>
+        <p class="muted">Rolün adını sen yaz (örn. Sınıf başkanı, Nöbet sorumlusu) ve rolün görevlerini seç. Kişiyi eklerken ya da başvurusunu kabul ederken rolü verirsin. Kullanıcı yönetimi, çöp, kayıtlar, bakım ve roller her zaman sadece sende kalır.</p>
+        <form id="rl-form" novalidate>
+          <div class="stack">
+            <div class="field">
+              <label for="rl-name">Rol adı</label>
+              <input id="rl-name" type="text" maxlength="30" autocomplete="off">
+            </div>
+            <fieldset class="perms" id="rl-perms"><legend>Görevler</legend></fieldset>
+            <p class="msg" id="rl-msg" role="alert" hidden></p>
+            <div class="actions">
+              <button class="btn btn-primary" id="rl-go" type="submit">Rolü kaydet</button>
+              <button class="btn btn-quiet" id="rl-cancel" type="button" hidden>Vazgeç</button>
+            </div>
+          </div>
+        </form>
+      </section>
+      <h3 class="view-title" style="font-size:1.2rem">Roller</h3>
+      <div class="stack" id="rl-list"></div>
+    </div>
+
+    <div class="view" id="adm-req" hidden>
+      <section class="panel">
+        <h3>Kayıt başvuruları</h3>
+        <label class="check"><input type="checkbox" id="reg-open"> Yeni başvurular açık (kapatırsan giriş ekranında “Kayıt ol” görünmez)</label>
+        <p class="msg" id="reg-msg" role="alert" hidden></p>
+      </section>
+      <div class="stack" id="req-list"></div>
+    </div>
+
+    <div class="view" id="adm-logs" hidden>
+      <p class="muted">Son 100 işlem: kim neyi ekledi, düzenledi ya da sildi. Sadece yönetici görür.</p>
+      <div class="list" id="log-list"></div>
+    </div>
+
+    <div class="view" id="adm-calimp" hidden>
+      <section class="panel">
+        <h3>Takvimi toplu yükle</h3>
+        <p class="muted">Her satıra bir kayıt yaz, hepsi tek seferde takvime eklenir. Biçim: <code>başlangıç | bitiş (isteğe bağlı) | tür (isteğe bağlı) | başlık</code>. Tür: etkinlik, gezi, tatil, toplantı. Tarih biçimi YYYY-AA-GG.</p>
+        <textarea id="ci-text" rows="7" spellcheck="false" placeholder="2026-11-16 | 2026-11-20 | tatil | Ara tatil&#10;2026-12-18 | gezi | Müze gezisi&#10;2027-01-18 | 2027-01-29 | tatil | Yarıyıl tatili" style="min-height:150px"></textarea>
+        <p class="msg" id="ci-msg" role="alert" hidden></p>
+        <div class="actions">
+          <button class="btn btn-quiet" id="ci-prev" type="button">Kontrol et</button>
+          <button class="btn btn-primary" id="ci-go" type="button" disabled>Takvime ekle</button>
+        </div>
+        <div class="list" id="ci-list"></div>
+      </section>
+    </div>
+
+    <div class="view" id="adm-fb" hidden>
+      <p class="muted">Öğrencilerin isimsiz gönderdiği öneriler, sorunlar ve teşekkürler. Kimin yazdığı kaydedilmez. Okuyunca sil.</p>
+      <div class="list" id="fb-list"></div>
+    </div>
+
+    <div class="view" id="adm-trash" hidden>
+      <p class="muted">Silinen ödev, sınav, etkinlik ve notlar 30 gün burada durur. Geri alırsan ilk sahibinin adıyla yerine döner. Ders notu fotoğrafları geri gelmez.</p>
+      <div class="list" id="trash-list"></div>
+    </div>
+
+    <div class="view" id="adm-maint" hidden>
+      <section class="panel">
+        <h3>Yedek al</h3>
+        <p class="muted">Ödev, sınav, etkinlik, ders notu, duyuru, soru, anket, ders programı ve kullanıcı listesini tek dosya olarak indirir (fotoğraflar ve şifreler dahil değil).</p>
+        <p class="msg" id="m-bk-msg" role="alert" hidden></p>
+        <div class="actions"><button class="btn btn-quiet" id="m-backup" type="button">Yedeği indir (JSON)</button></div>
+      </section>
+      <section class="panel">
+        <h3>Bakım modu</h3>
+        <p class="muted">Güncelleme yaparken aç. Yönetici dışındaki herkes "Bakımdayız" ekranını görür, bitince kapatınca ekran kendiliğinden kalkar. Öğrencilerin verisi etkilenmez.</p>
+        <label class="check"><input type="checkbox" id="m-maint"> Bakım modu açık</label>
+        <div class="field">
+          <label for="m-maint-msg">Öğrencilerin göreceği mesaj</label>
+          <input id="m-maint-msg" type="text" maxlength="200" autocomplete="off" placeholder="Uygulamayı güncelliyoruz. Birazdan tekrar dene.">
+        </div>
+        <p class="msg" id="m-maint-st" role="alert" hidden></p>
+        <div class="actions"><button class="btn btn-quiet btn-small" id="m-maint-save" type="button">Mesajı kaydet</button></div>
+      </section>
+      <section class="panel">
+        <h3>Mobi AI</h3>
+        <p class="muted">Öğrencilerin her ekranda kullandığı yapay zeka yardımcısı. Kapatırsan düğme herkesten gizlenir.</p>
+        <label class="check"><input type="checkbox" id="m-ai"> Mobi AI açık</label>
+        <p class="msg" id="m-ai-msg" role="alert" hidden></p>
+      </section>
+      <section class="panel">
+        <h3>Hatırlatma zamanı</h3>
+        <p class="muted">Yapılmamış ödev için kaç gün kala 17:00 ve 20:00 bildirimi gitsin?</p>
+        <div class="field">
+          <label for="m-days">Gün sayısı</label>
+          <select id="m-days">
+            <option value="1">1 gün (sadece yarın ve bugün bitenler)</option>
+            <option value="2">2 gün</option>
+            <option value="3">3 gün</option>
+            <option value="5">5 gün</option>
+            <option value="7">7 gün</option>
+          </select>
+        </div>
+        <p class="msg" id="m-days-msg" role="alert" hidden></p>
+      </section>
+      <section class="panel">
+        <h3>Eski kayıtları temizle</h3>
+        <p class="muted">Bitiş tarihi 45 günden eski ödev, sınav ve etkinlikler ile 30 günden eski kayıt satırları zaten listede görünmez ya da gerekmez. Burada kalıcı olarak silerek veritabanını hafif tutarsın. Bu işlem geri alınamaz.</p>
+        <p class="msg" id="m-msg" role="alert" hidden></p>
+        <div class="actions"><button class="btn btn-quiet" id="m-clean" type="button">Eski kayıtları sil</button></div>
+      </section>
+    </div>
+
+    <div class="view" id="adm-sched" hidden>
+      <p class="muted">Ders saatlerini ve her günün derslerini buradan düzenle. Bitirince "Programı kaydet"e bas, herkes yeni programı görür.</p>
+      <section class="panel">
+        <h3>Ders saatleri</h3>
+        <div class="plist" id="p-list"></div>
+        <div class="actions">
+          <button class="btn btn-quiet btn-small" id="p-add" type="button">+ Ders saati ekle</button>
+          <button class="btn btn-quiet btn-small" id="p-default" type="button">Örnek saatleri koy (8 ders)</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h3>Haftalık program</h3>
+        <p class="muted">Bir kutuya dokun, sonra dersi seç.</p>
+        <div class="gridwrap" id="g-grid"></div>
+      </section>
+      <section class="panel" id="c-panel" hidden>
+        <h3 id="c-title">Ders</h3>
+        <div class="stack">
+          <div class="field">
+            <label for="c-sub">Ders</label>
+            <select id="c-sub"></select>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="c-teacher">Öğretmen <span class="hint">(isteğe bağlı)</span></label>
+              <input id="c-teacher" type="text" maxlength="40" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="c-room">Sınıf / laboratuvar <span class="hint">(isteğe bağlı)</span></label>
+              <input id="c-room" type="text" maxlength="20" autocomplete="off">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary btn-small" id="c-apply" type="button">Uygula</button>
+            <button class="btn btn-quiet btn-small" id="c-clear" type="button">Kutuyu boşalt</button>
+          </div>
+        </div>
+      </section>
+      <p class="msg" id="s-msg" role="alert" hidden></p>
+      <div class="actions"><button class="btn btn-primary" id="s-save" type="button">Programı kaydet</button></div>
+    </div>
+  </section>
+</div>
+
+<!-- Cahil AI (rehberli mod: yalnız "guide" görevi olan rollerde) -->
+<button class="ai-fab gd-fab" id="gd-fab" type="button" aria-label="Cahil AI'yı aç" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8"/><circle cx="12" cy="16.8" r=".6"/></svg>
+  <span id="gd-fab-t">Cahil AI</span>
+</button>
+<div class="gd-tip" id="gd-tip" role="status" hidden></div>
+<section class="ai-panel gd-panel" id="gd-panel" role="dialog" aria-modal="true" aria-labelledby="gd-title" hidden>
+  <header class="ai-head">
+    <div class="ai-ttl"><b id="gd-title">Cahil AI</b><small>Her adımda yanında. Uygulamayı anlatırım. Konu, soru ve prova işlerini Mobi AI'ya veririm, bitince devam ederim.</small></div>
+    <button class="ai-x" id="gd-close" type="button" aria-label="Kapat">×</button>
+  </header>
+  <div class="ai-log" id="gd-log" aria-live="polite"></div>
+  <div class="ai-chips" id="gd-chips"></div>
+  <form class="ai-form" id="gd-form" novalidate>
+    <label class="sr-only" for="gd-in">Cahil AI'ya yaz</label>
+    <textarea id="gd-in" rows="2" maxlength="400" placeholder="Takıldığın yeri yaz… (örn. ödevi nasıl eklerim?)"></textarea>
+    <button class="btn btn-primary" id="gd-send" type="submit">Gönder</button>
+  </form>
+</section>
+
+<!-- Mobi AI -->
+<button class="ai-fab" id="ai-fab" type="button" aria-label="Mobi AI'yı aç" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+  <span>Mobi</span>
+</button>
+<section class="ai-panel" id="ai-panel" role="dialog" aria-modal="true" aria-labelledby="ai-title" hidden>
+  <header class="ai-head">
+    <div class="ai-ttl"><b id="ai-title">Mobi AI</b><small>Çalışma arkadaşın. Yanlış bilgi verebilir, önemli şeyleri kitaptan ya da öğretmeninden kontrol et.</small></div>
+    <button class="lnk" id="ai-clear" type="button">Temizle</button>
+    <button class="ai-x" id="ai-close" type="button" aria-label="Kapat">×</button>
+  </header>
+  <div class="ai-back" id="ai-back" hidden><span>Cahil AI seni Mobi'ye yönlendirdi.</span> <button class="lnk" id="ai-back-b" type="button">Cahil AI'ya dön</button></div>
+  <div class="ai-log" id="ai-log" aria-live="polite"></div>
+  <div class="ai-chips" id="ai-chips"></div>
+  <div class="ai-prev" id="ai-prev" hidden><span>Soru fotoğrafı eklendi. Mobi'ye gönderilir, saklanmaz. Fotoğrafta yüz ya da kişisel bilgi olmasın.</span> <button class="lnk" id="ai-prev-x" type="button">Kaldır</button></div>
+  <form class="ai-form" id="ai-form" novalidate>
+    <label class="sr-only" for="ai-in">Mobi'ye sorunu yaz</label>
+    <textarea id="ai-in" rows="2" maxlength="600" placeholder="Mobi'ye sor… (örn. Newton'un 2. yasasını anlat)"></textarea>
+    <input type="file" id="ai-file" accept="image/*" hidden>
+    <button class="btn btn-quiet" id="ai-photo" type="button" aria-label="Soru fotoğrafı ekle">Fotoğraf</button>
+    <button class="btn btn-primary" id="ai-send" type="submit">Gönder</button>
+  </form>
+</section>
+
+<section class="ai-panel" id="nc-panel" role="dialog" aria-modal="true" aria-labelledby="nc-title" hidden>
+  <header class="ai-head">
+    <div class="ai-ttl"><b id="nc-title">Özet ve kartlar</b><small id="nc-sub">Mobi notu özetler ve ezber kartı çıkarır. Yanlışı olabilir, notla karşılaştır.</small></div>
+    <button class="ai-x" id="nc-close" type="button" aria-label="Kapat">×</button>
+  </header>
+  <div class="ai-log" id="nc-body"></div>
+</section>
+
+<section class="ai-panel ms-panel" id="ms-panel" role="dialog" aria-modal="true" aria-labelledby="ms-title" hidden>
+  <header class="ai-head">
+    <div class="ai-ttl"><b id="ms-title">Mobi soruyor</b><small>İki kısa soru. Cevapların sadece sana özel, öneriler buna göre çıkar.</small></div>
+    <button class="ai-x" id="ms-close" type="button" aria-label="Kapat">×</button>
+  </header>
+  <div class="ai-log" id="ms-body"></div>
+</section>
+
+<section class="ai-panel" id="pl-panel" role="dialog" aria-modal="true" aria-labelledby="pl-title" hidden>
+  <header class="ai-head">
+    <div class="ai-ttl"><b id="pl-title">Hazırlık planı</b><small id="pl-sub"></small></div>
+    <button class="ai-x" id="pl-close" type="button" aria-label="Kapat">×</button>
+  </header>
+  <div class="ai-log" id="pl-body"></div>
+</section>
+
+<div class="wl" id="welcome" role="dialog" aria-modal="true" aria-labelledby="wl-title" hidden>
+  <div class="wl-card">
+    <button class="wl-skip" id="wl-skip" type="button">Geç</button>
+    <div class="wl-ico" id="wl-ico" aria-hidden="true"></div>
+    <h2 id="wl-title"></h2>
+    <p id="wl-text"></p>
+    <ul id="wl-list"></ul>
+    <div class="wl-dots" id="wl-dots" aria-hidden="true"></div>
+    <div class="wl-nav">
+      <button class="btn btn-quiet" id="wl-back" type="button">Geri</button>
+      <button class="btn btn-primary" id="wl-next" type="button">İleri</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav" id="nav" aria-label="Ana gezinme" hidden>
+  <div class="nav-in">
+    <button type="button" data-view="today" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10.5V20h12v-9.5"/><path d="M10 20v-5h4v5"/></svg>
+      Bugün
+    </button>
+    <button type="button" data-view="hw">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v2H9z"/><path d="m9 13 2 2 4-4"/></svg>
+      Ödev<span class="badge" id="b-hw" hidden>0</span>
+    </button>
+    <button type="button" data-view="ex">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h7M9 17h5"/></svg>
+      Sınav<span class="badge" id="b-ex" hidden>0</span>
+    </button>
+    <button type="button" data-view="cal">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1"/><circle cx="12" cy="14.5" r="1"/><circle cx="15.5" cy="14.5" r="1"/></svg>
+      Takvim
+    </button>
+    <button type="button" data-view="ann">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17.5 9.5a4 4 0 0 1 0 5"/></svg>
+      Duyuru<span class="badge" id="b-ann" hidden>0</span>
+    </button>
+    <button type="button" data-view="more">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      Daha
+    </button>
+  </div>
+</nav>
+
+<div class="toast" id="toast" role="status" hidden></div>
 <div class="lb" id="lb" hidden>
   <button class="btn btn-primary btn-small" id="lb-close" type="button">Kapat</button>
   <img id="lb-img" alt="Ödev fotoğrafı">
 </div>
 
-<script type="module">
-import { firebaseConfig } from "./firebase-config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-(function () {
-  var MONTHS = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
-  var DAYS = ["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
-  var SUBJECTS = [
-    { n: "Fizik", h: 215 }, { n: "Kimya", h: 28 }, { n: "Biyoloji", h: 140 },
-    { n: "Matematik", h: 275 }, { n: "Türkçe", h: 350 }, { n: "İngilizce", h: 190 },
-    { n: "Tarih", h: 48 }, { n: "Coğrafya", h: 95 }, { n: "Diğer", h: 0 }
-  ];
-  var PHOTO_LIMIT = 170000;
-  var docs = [];
-  var tab = "active";
-  var f = { q: "", sub: "all", week: false, sort: "date" };
-  var loaded = false, loadError = "";
-  var db = null;
-  var canWrite = null, canEdit = false, myId = null;
-  var armedId = null, armTimer = null;
-  var editingId = null;
-  var photoData = "";
-  var photoBusy = false;
-
-  var $ = function (id) { return document.getElementById(id); };
-  function pad(n) { return (n < 10 ? "0" : "") + n; }
-  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
-  function parts(s) { var a = String(s).split("-").map(Number); return { y: a[0], m: a[1], d: a[2] }; }
-  function dueEnd(s) { var p = parts(s); return new Date(p.y, p.m - 1, p.d, 23, 59, 59); }
-  function dayDiff(s) {
-    var p = parts(s), due = new Date(p.y, p.m - 1, p.d), now = new Date();
-    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    return Math.round((due - today) / 86400000);
-  }
-  function isExpired(s) { return Date.now() > dueEnd(s).getTime(); }
-  function subHue(name) { for (var i = 0; i < SUBJECTS.length; i++) if (SUBJECTS[i].n === name) return SUBJECTS[i].h; return 0; }
-
-  function status(s) {
-    var diff = dayDiff(s);
-    if (isExpired(s)) {
-      var ago = Math.abs(diff);
-      return { state: "done", label: ago <= 1 ? "Dün doldu" : ago + " gün önce doldu" };
-    }
-    if (diff === 0) {
-      var hrs = Math.max(1, Math.ceil((dueEnd(s).getTime() - Date.now()) / 3600000));
-      return { state: "crit", label: "Bugün son gün · " + hrs + " saat kaldı" };
-    }
-    if (diff === 1) return { state: "crit", label: "Yarın son gün" };
-    if (diff <= 3) return { state: "warn", label: diff + " gün kaldı" };
-    return { state: "ok", label: diff + " gün kaldı" };
-  }
-
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  }
-  function canModify(h) { return canEdit || (!!myId && h.uid === myId); }
-
-  /* Kart */
-  function card(h) {
-    var st = status(h.due), p = parts(h.due), dt = new Date(p.y, p.m - 1, p.d);
-    var li = el("li", "card");
-    li.setAttribute("data-state", st.state);
-
-    var date = el("div", "date");
-    date.appendChild(el("span", "dow", DAYS[dt.getDay()]));
-    date.appendChild(el("span", "day", String(p.d)));
-    date.appendChild(el("span", "mon", MONTHS[p.m - 1]));
-    li.appendChild(date);
-
-    var body = el("div", "body");
-    var top = el("div", "top");
-    var subName = h.subject || "Diğer";
-    var sc = el("span", "chip sub" + (subName === "Diğer" ? " other" : ""), subName);
-    sc.style.setProperty("--h", String(subHue(subName)));
-    top.appendChild(sc);
-    top.appendChild(el("span", "chip", st.label));
-    body.appendChild(top);
-    body.appendChild(el("h3", "title", h.title || "Adsız ödev"));
-    if (h.desc) body.appendChild(el("p", "desc", h.desc));
-    if (h.photo) {
-      var tb = el("button", "thumb");
-      tb.type = "button";
-      tb.setAttribute("aria-label", "Fotoğrafı büyüt");
-      var im = document.createElement("img");
-      im.src = h.photo; im.alt = "Ödev fotoğrafı";
-      tb.appendChild(im);
-      tb.addEventListener("click", function () { $("lb-img").src = h.photo; $("lb").hidden = false; $("lb-close").focus(); });
-      body.appendChild(tb);
-    }
-
-    var meta = el("div", "meta");
-    var whoWrap = el("span", "", "Ekleyen: ");
-    whoWrap.appendChild(el("span", "who", h.author || "Bilinmiyor"));
-    meta.appendChild(whoWrap);
-    if (h.createdAt) {
-      var c = new Date(h.createdAt);
-      meta.appendChild(el("span", "", c.getDate() + " " + MONTHS[c.getMonth()] + " tarihinde eklendi"));
-    }
-    if (canModify(h)) {
-      var ed = el("button", "lnk", "Düzenle");
-      ed.type = "button";
-      ed.addEventListener("click", function () { startEdit(h); });
-      meta.appendChild(ed);
-      var del = el("button", "lnk", armedId === h.id ? "Silmek için tekrar dokun" : "Sil");
-      del.type = "button";
-      del.setAttribute("data-armed", armedId === h.id ? "1" : "0");
-      del.addEventListener("click", function () { onDelete(h.id); });
-      meta.appendChild(del);
-    }
-    body.appendChild(meta);
-    li.appendChild(body);
-    return li;
-  }
-
-  /* Filtre ve sıralama */
-  function visible(items) {
-    var q = f.q.trim().toLocaleLowerCase("tr");
-    var out = items.filter(function (h) {
-      if (f.sub !== "all" && (h.subject || "Diğer") !== f.sub) return false;
-      if (tab === "active" && f.week && dayDiff(h.due) > 7) return false;
-      if (q) {
-        var hay = ((h.title || "") + " " + (h.desc || "") + " " + (h.author || "") + " " + (h.subject || "")).toLocaleLowerCase("tr");
-        if (hay.indexOf(q) < 0) return false;
-      }
-      return true;
-    });
-    out.sort(function (a, b) {
-      if (f.sort === "new") return (b.createdAt || 0) - (a.createdAt || 0);
-      if (f.sort === "subject") {
-        var sa = a.subject || "Diğer", sb = b.subject || "Diğer";
-        var c = sa.localeCompare(sb, "tr");
-        if (c) return c;
-      }
-      if (a.due === b.due) return (a.createdAt || 0) - (b.createdAt || 0);
-      var asc = a.due < b.due ? -1 : 1;
-      return tab === "active" ? asc : -asc;
-    });
-    return out;
-  }
-
-  function render() {
-    var active = docs.filter(function (h) { return h.due && !isExpired(h.due); });
-    var expired = docs.filter(function (h) { return h.due && isExpired(h.due); });
-    var soon = active.filter(function (h) { return dayDiff(h.due) <= 3; }).length;
-    $("s-active").textContent = active.length;
-    $("s-soon").textContent = soon;
-    $("s-expired").textContent = expired.length;
-    $("n-active").textContent = active.length;
-    $("n-expired").textContent = expired.length;
-    $("week").hidden = tab !== "active";
-
-    var list = $("list");
-    list.textContent = "";
-    var base = tab === "active" ? active : expired;
-
-    if (loadError) {
-      var err = el("div", "empty");
-      err.appendChild(el("strong", "", "Ödevler yüklenemedi"));
-      err.appendChild(el("span", "", loadError));
-      list.appendChild(err);
-      return;
-    }
-    if (!loaded) {
-      var ld = el("div", "empty");
-      ld.appendChild(el("strong", "", "Ödevler yükleniyor"));
-      ld.appendChild(el("span", "", "Birkaç saniye sürebilir."));
-      list.appendChild(ld);
-      return;
-    }
-    var items = visible(base);
-    if (!items.length) {
-      var em = el("div", "empty");
-      var filtered = base.length > 0;
-      if (filtered) {
-        em.appendChild(el("strong", "", "Filtreye uyan ödev yok"));
-        var clr = el("button", "btn btn-quiet btn-small", "Filtreleri temizle");
-        clr.type = "button";
-        clr.addEventListener("click", clearFilters);
-        em.appendChild(clr);
-      } else if (tab === "active") {
-        em.appendChild(el("strong", "", "Şu an aktif ödev yok"));
-        em.appendChild(el("span", "", canWrite === false ? "Yeni ödev eklenince burada görünecek." : "İlk ödevi “Ödev ekle” düğmesiyle sen ekleyebilirsin."));
-      } else {
-        em.appendChild(el("strong", "", "Süresi dolan ödev yok"));
-        em.appendChild(el("span", "", "Bitiş tarihi geçen ödevler otomatik olarak buraya taşınır."));
-      }
-      list.appendChild(em);
-      return;
-    }
-    var ul = el("ul", "list");
-    items.forEach(function (h) { ul.appendChild(card(h)); });
-    list.appendChild(ul);
-  }
-
-  /* Filtre çubuğu */
-  function buildSubs() {
-    var box = $("subs");
-    box.textContent = "";
-    var all = el("button", "pill", "Tüm dersler");
-    all.type = "button"; all.setAttribute("data-v", "all");
-    box.appendChild(all);
-    SUBJECTS.forEach(function (s) {
-      var b = el("button", "pill");
-      b.type = "button"; b.setAttribute("data-v", s.n);
-      var d = el("span", "dot");
-      d.style.setProperty("--h", String(s.h));
-      b.appendChild(d);
-      b.appendChild(document.createTextNode(s.n));
-      box.appendChild(b);
-    });
-    box.addEventListener("click", function (e) {
-      var b = e.target.closest("button");
-      if (!b) return;
-      f.sub = b.getAttribute("data-v");
-      syncFilters(); render();
-    });
-  }
-  function syncFilters() {
-    Array.prototype.forEach.call($("subs").children, function (b) {
-      b.setAttribute("aria-pressed", b.getAttribute("data-v") === f.sub ? "true" : "false");
-    });
-    $("week").setAttribute("aria-pressed", f.week ? "true" : "false");
-  }
-  function clearFilters() {
-    f.q = ""; f.sub = "all"; f.week = false;
-    $("q").value = "";
-    syncFilters(); render();
-  }
-  $("q").addEventListener("input", function () { f.q = this.value; render(); });
-  $("sort").addEventListener("change", function () { f.sort = this.value; render(); });
-  $("week").addEventListener("click", function () { f.week = !f.week; syncFilters(); render(); });
-
-  function setTab(t) {
-    tab = t;
-    $("tab-active").setAttribute("aria-selected", t === "active" ? "true" : "false");
-    $("tab-expired").setAttribute("aria-selected", t === "expired" ? "true" : "false");
-    render();
-  }
-  $("tab-active").addEventListener("click", function () { setTab("active"); });
-  $("tab-expired").addEventListener("click", function () { setTab("expired"); });
-
-  /* Fotoğraf */
-  function setPhoto(data) {
-    photoData = data || "";
-    $("photo-prev").hidden = !photoData;
-    if (photoData) $("photo-img").src = photoData; else $("photo-img").removeAttribute("src");
-  }
-  function compress(file) {
-    return new Promise(function (resolve, reject) {
-      var r = new FileReader();
-      r.onerror = function () { reject(); };
-      r.onload = function () {
-        var img = new Image();
-        img.onerror = function () { reject(); };
-        img.onload = function () {
-          var k = Math.min(1, 1100 / Math.max(img.width, img.height));
-          var scales = [1, 0.8, 0.65, 0.5, 0.4], qs = [0.72, 0.6, 0.5, 0.4];
-          for (var i = 0; i < scales.length; i++) {
-            var w = Math.max(1, Math.round(img.width * k * scales[i]));
-            var h = Math.max(1, Math.round(img.height * k * scales[i]));
-            var cv = document.createElement("canvas");
-            cv.width = w; cv.height = h;
-            var ctx = cv.getContext("2d");
-            ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
-            ctx.drawImage(img, 0, 0, w, h);
-            for (var j = 0; j < qs.length; j++) {
-              var out = cv.toDataURL("image/jpeg", qs[j]);
-              if (out.length <= PHOTO_LIMIT) { resolve(out); return; }
-            }
-          }
-          reject();
-        };
-        img.src = r.result;
-      };
-      r.readAsDataURL(file);
-    });
-  }
-  $("f-photo").addEventListener("change", function () {
-    var file = this.files && this.files[0];
-    if (!file) return;
-    photoBusy = true; formMsg("");
-    $("submit").disabled = true;
-    compress(file).then(function (d) { setPhoto(d); })
-      .catch(function () { formMsg("Fotoğraf okunamadı. JPG veya PNG bir fotoğraf dene."); })
-      .then(function () { photoBusy = false; $("submit").disabled = false; $("f-photo").value = ""; });
-  });
-  $("photo-remove").addEventListener("click", function () { setPhoto(""); });
-  $("lb").addEventListener("click", function () { $("lb").hidden = true; });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("lb").hidden = true; });
-
-  /* Form */
-  function fillSubjectSelect() {
-    var s = $("f-sub");
-    var ph = el("option", "", "Ders seç");
-    ph.value = ""; s.appendChild(ph);
-    SUBJECTS.forEach(function (x) { var o = el("option", "", x.n); o.value = x.n; s.appendChild(o); });
-  }
-  function formMsg(t) { var m = $("form-msg"); m.textContent = t || ""; m.hidden = !t; }
-  function resetForm() {
-    $("f-title").value = ""; $("f-desc").value = ""; $("f-due").value = ""; $("f-sub").value = "";
-    setPhoto(""); formMsg("");
-    editingId = null;
-    $("form-title").textContent = "Yeni ödev";
-    $("submit").textContent = "Ödevi kaydet";
-  }
-  function showForm(open) {
-    $("form-panel").hidden = !open;
-    $("toggle").setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) {
-      $("f-due").min = editingId ? "" : todayStr();
-      $("form-panel").scrollIntoView({ block: "nearest" });
-      $("f-title").focus();
-    }
-  }
-  function startEdit(h) {
-    resetForm();
-    editingId = h.id;
-    $("form-title").textContent = "Ödevi düzenle";
-    $("submit").textContent = "Değişiklikleri kaydet";
-    $("f-title").value = h.title || "";
-    $("f-desc").value = h.desc || "";
-    $("f-due").value = h.due || "";
-    $("f-sub").value = h.subject || "Diğer";
-    if (h.author) $("f-author").value = h.author;
-    setPhoto(h.photo || "");
-    showForm(true);
-  }
-  $("toggle").addEventListener("click", function () {
-    if ($("form-panel").hidden) { resetForm(); loadAuthor(); showForm(true); } else showForm(false);
-  });
-  $("cancel").addEventListener("click", function () { resetForm(); showForm(false); loadAuthor(); });
-
-  function applyWriteState() {
-    var allowed = canWrite !== false && !!db;
-    $("toggle").hidden = !allowed;
-    $("readonly-note").hidden = allowed;
-    if (!allowed) $("form-panel").hidden = true;
-  }
-  function loadAuthor() { try { var s = localStorage.getItem("odev-author"); if (s && !$("f-author").value) $("f-author").value = s; } catch (e) {} }
-  loadAuthor();
-
-  $("form").addEventListener("submit", function (ev) {
-    ev.preventDefault();
-    if (photoBusy) return;
-    if (!db) { formMsg("Kayıt şu an yapılamıyor. Sayfayı yenileyip tekrar dene."); return; }
-    var title = $("f-title").value.trim();
-    var sub = $("f-sub").value;
-    var desc = $("f-desc").value.trim();
-    var author = $("f-author").value.trim();
-    var due = $("f-due").value;
-    if (!title) { formMsg("Ödev adını yaz."); $("f-title").focus(); return; }
-    if (!sub) { formMsg("Dersi seç."); $("f-sub").focus(); return; }
-    if (!due) { formMsg("Bitiş tarihini seç."); $("f-due").focus(); return; }
-    if (!editingId && due < todayStr()) { formMsg("Bitiş tarihi bugünden önce olamaz."); $("f-due").focus(); return; }
-    if (!author) { formMsg("Ödevi ekleyen kişinin adını yaz."); $("f-author").focus(); return; }
-    formMsg("");
-    var btn = $("submit"), label = btn.textContent;
-    btn.disabled = true; btn.textContent = "Kaydediliyor…";
-    var body = { title: title, subject: sub, desc: desc, author: author, due: due, photo: photoData };
-    var op;
-    if (editingId) {
-      op = updateDoc(doc(db, "homework", editingId), body);
-    } else {
-      body.createdAt = Date.now(); body.uid = myId || null;
-      op = addDoc(collection(db, "homework"), body);
-    }
-    op.then(function () {
-      try { localStorage.setItem("odev-author", author); } catch (e) {}
-      resetForm(); showForm(false); loadAuthor();
-      render();
-    }).catch(function (e) {
-      var code = e && e.code;
-      if (code === "permission-denied") formMsg("Bu işlem için yetkin yok. Sadece kendi eklediğin ödevi değiştirebilirsin.");
-      else if (code === "resource-exhausted") formMsg("Kayıt sınırı doldu. Bir süre sonra tekrar dene.");
-      else formMsg("Ödev kaydedilemedi. Biraz sonra tekrar dene.");
-    }).then(function () { btn.disabled = false; btn.textContent = editingId ? "Değişiklikleri kaydet" : "Ödevi kaydet"; });
-  });
-
-  function onDelete(id) {
-    if (armedId !== id) {
-      armedId = id; render();
-      clearTimeout(armTimer);
-      armTimer = setTimeout(function () { armedId = null; render(); }, 4000);
-      return;
-    }
-    armedId = null; clearTimeout(armTimer);
-    if (db) deleteDoc(doc(db, "homework", id)).catch(function () {});
-    render();
-  }
-
-  /* Görünüm ayarları (her kişinin kendi tarayıcısında kalır) */
-  var SCALES = [0.9, 1, 1.15, 1.3];
-  var scaleIdx = 1;
-  var root = document.documentElement;
-  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function applyScale() {
-    root.style.fontSize = (14 * SCALES[scaleIdx]) + "px";
-    $("fs-down").disabled = scaleIdx === 0;
-    $("fs-up").disabled = scaleIdx === SCALES.length - 1;
-  }
-  function applyTheme(v) {
-    if (v === "light" || v === "dark") root.setAttribute("data-theme", v);
-    else if (root.getAttribute("data-theme")) root.removeAttribute("data-theme");
-    Array.prototype.forEach.call($("theme-seg").children, function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); });
-  }
-  function applyAccent(v) {
-    if (v === "yesil") root.removeAttribute("data-accent"); else root.setAttribute("data-accent", v);
-    Array.prototype.forEach.call($("swatches").children, function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); });
-  }
-  $("prefs-toggle").addEventListener("click", function () {
-    var open = $("prefs").hidden;
-    $("prefs").hidden = !open;
-    this.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-  $("theme-seg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var v = b.getAttribute("data-v"); store("odev-theme", v); applyTheme(v); });
-  $("swatches").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; var v = b.getAttribute("data-v"); store("odev-accent", v); applyAccent(v); });
-  $("fs-down").addEventListener("click", function () { if (scaleIdx > 0) { scaleIdx--; store("odev-scale", String(scaleIdx)); applyScale(); } });
-  $("fs-up").addEventListener("click", function () { if (scaleIdx < SCALES.length - 1) { scaleIdx++; store("odev-scale", String(scaleIdx)); applyScale(); } });
-
-  var sv = read("odev-scale");
-  if (sv !== null && SCALES[Number(sv)]) scaleIdx = Number(sv);
-  applyScale();
-  var tv = read("odev-theme");
-  if (tv === "light" || tv === "dark") applyTheme(tv);
-  var av = read("odev-accent");
-  if (av === "mavi" || av === "bordo" || av === "turuncu") applyAccent(av);
-
-  /* Başlangıç */
-  fillSubjectSelect();
-  buildSubs();
-  syncFilters();
-  render();
-  applyWriteState();
-  setInterval(render, 60000);
-
-  (async function init() {
-    if (!firebaseConfig || !firebaseConfig.apiKey || String(firebaseConfig.apiKey).indexOf("BURAYA") === 0) {
-      loaded = true; loadError = "Firebase ayarı henüz girilmemiş. README.md dosyasındaki 4. adımı yap."; render(); return;
-    }
-    try {
-      var app = initializeApp(firebaseConfig);
-      var cred = await signInAnonymously(getAuth(app));
-      myId = cred.user.uid;
-      db = getFirestore(app);
-    } catch (e) {
-      loaded = true;
-      loadError = "Bağlanılamadı. İnternetini kontrol et. Sorun sürerse Firebase'de Anonymous girişin açık olduğundan emin ol.";
-      render(); return;
-    }
-    canWrite = true;
-    applyWriteState();
-    onSnapshot(collection(db, "homework"), function (snap) {
-      docs = snap.docs.map(function (d) { var o = d.data() || {}; o.id = d.id; return o; });
-      loaded = true; loadError = "";
-      render();
-    }, function (e) {
-      loaded = true;
-      loadError = (e && e.code === "permission-denied") ? "Okuma izni yok. Firestore kurallarını README.md'deki gibi yayınladığından emin ol." : "Bağlantı kesildi. Sayfayı yenile.";
-      render();
-    });
-  })();
-})();
-</script>
+<script type="module" src="app.js"></script>
 </body>
 </html>

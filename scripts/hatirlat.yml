@@ -1,0 +1,33 @@
+name: Odev hatirlaticisi
+
+on:
+  schedule:
+    # Saatler UTC, Türkiye saati UTC+3.
+    - cron: "0 5 * * *"    # 08:00 doğum günü bildirimi
+    - cron: "0 14 * * *"   # 17:00 ödev hatırlatması
+    - cron: "0 16 * * 0"   # Pazar 19:00 haftalık özet
+    - cron: "0 17 * * *"   # 20:00 ödev hatırlatması
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "Elle test: h17, h20, week (haftalık özet) ya da bd (doğum günü). Boş bırakırsan saate göre seçilir."
+        required: false
+        default: ""
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: firebase-admin kur
+        run: npm install --no-save firebase-admin@12
+      - name: Hatirlatmalari gonder
+        run: node scripts/hatirla.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SITE_URL: https://fen-b-odev.vercel.app
+          # Tur, çalışmayı başlatan zamanlayıcıdan okunur: GitHub gecikse bile doğru tur gider.
+          SLOT_OVERRIDE: ${{ github.event.inputs.slot || (github.event.schedule == '0 5 * * *' && 'bd') || (github.event.schedule == '0 14 * * *' && 'h17') || (github.event.schedule == '0 16 * * 0' && 'week') || (github.event.schedule == '0 17 * * *' && 'h20') || '' }}
